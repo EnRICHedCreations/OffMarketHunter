@@ -40,9 +40,18 @@ export async function GET(request: Request) {
       ORDER BY event_date DESC
     `;
 
+    // Convert DECIMAL fields from strings to numbers
+    const convertedHistory = history.rows.map(row => ({
+      ...row,
+      old_price: row.old_price ? parseFloat(row.old_price) : null,
+      new_price: row.new_price ? parseFloat(row.new_price) : null,
+      price_change_amount: row.price_change_amount ? parseFloat(row.price_change_amount) : null,
+      price_change_percent: row.price_change_percent ? parseFloat(row.price_change_percent) : null,
+    }));
+
     return NextResponse.json({
       success: true,
-      history: history.rows,
+      history: convertedHistory,
     });
   } catch (error) {
     console.error('Error fetching property history:', error);

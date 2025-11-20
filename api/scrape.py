@@ -1,48 +1,16 @@
 from http.server import BaseHTTPRequestHandler
 import json
-import sys
-import os
-
-# Add HomeHarvest Elite to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'HomeHarvest Elite'))
-
-try:
-    from homeharvest import scrape_property
-    import pandas as pd
-except ImportError as e:
-    print(f"Import error: {e}")
-
-def safe_int(value):
-    """Convert to int, handling NaN and None"""
-    if pd.isna(value) or value is None:
-        return None
-    try:
-        return int(value)
-    except (ValueError, TypeError):
-        return None
-
-def safe_float(value):
-    """Convert to float, handling NaN and None"""
-    if pd.isna(value) or value is None:
-        return None
-    try:
-        return float(value)
-    except (ValueError, TypeError):
-        return None
-
-def safe_str(value):
-    """Convert to string, handling NaN and None"""
-    if pd.isna(value) or value is None:
-        return None
-    return str(value)
+from homeharvest import scrape_property
+import traceback
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
-        body = self.rfile.read(content_length)
-        data = json.loads(body)
-
         try:
+            # Get request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data)
+
             scrape_type = data.get('type', 'off_market')
             criteria = data.get('criteria', {})
 
@@ -76,6 +44,8 @@ class handler(BaseHTTPRequestHandler):
             if scrape_type == 'active':
                 params['updated_in_past_hours'] = data.get('updated_hours', 24)
 
+            print(f"Scraping with params: {params}")
+
             # Scrape properties
             df = scrape_property(**params)
 
@@ -87,49 +57,51 @@ class handler(BaseHTTPRequestHandler):
                 }
             else:
                 # Convert DataFrame to list of dictionaries
+                props_list = df.to_dict('records')
+
+                # Transform to match our expected format
                 properties = []
-                for _, row in df.iterrows():
-                    prop = {
-                        'property_id': safe_str(row.get('property_id')) or '',
-                        'full_street_line': safe_str(row.get('full_street_line')) or '',
-                        'city': safe_str(row.get('city')) or '',
-                        'state': safe_str(row.get('state')) or '',
-                        'zip_code': safe_str(row.get('zip_code')) or '',
-                        'county': safe_str(row.get('county')),
-                        'latitude': safe_float(row.get('latitude')),
-                        'longitude': safe_float(row.get('longitude')),
-                        'beds': safe_int(row.get('beds')),
-                        'baths': safe_float(row.get('baths')),
-                        'sqft': safe_int(row.get('sqft')),
-                        'lot_sqft': safe_int(row.get('lot_sqft')),
-                        'year_built': safe_int(row.get('year_built')),
-                        'property_type': safe_str(row.get('property_type')),
-                        'current_status': safe_str(row.get('status')) or 'off_market',
-                        'current_list_price': safe_float(row.get('list_price')),
-                        'list_date': safe_str(row.get('list_date')),
-                        'agent_name': safe_str(row.get('agent_name')),
-                        'agent_email': safe_str(row.get('agent_email')),
-                        'agent_phone': safe_str(row.get('agent_phone')),
-                        'broker_name': safe_str(row.get('broker_name')),
-                        'mls_id': safe_str(row.get('mls_id')),
-                        'primary_photo': safe_str(row.get('primary_photo')),
-                        'photos': row.get('photos', []) if not pd.isna(row.get('photos')) else [],
-                        'description': safe_str(row.get('description')),
+                for prop in props_list:
+                    properties.append({
+                        'property_id': str(prop.get('property_id', '')),
+                        'full_street_line': prop.get('street', ''),
+                        'city': prop.get('city', ''),
+                        'state': prop.get('state', ''),
+                        'zip_code': str(prop.get('zip_code', '')),
+                        'county': prop.get('county'),
+                        'latitude': prop.get('latitude'),
+                        'longitude': prop.get('longitude'),
+                        'beds': prop.get('beds'),
+                        'baths': prop.get('baths'),
+                        'sqft': prop.get('sqft'),
+                        'lot_sqft': prop.get('lot_sqft'),
+                        'year_built': prop.get('year_built'),
+                        'property_type': prop.get('property_type'),
+                        'current_status': prop.get('status', 'off_market'),
+                        'current_list_price': prop.get('list_price'),
+                        'list_date': prop.get('list_date'),
+                        'agent_name': prop.get('agent_name'),
+                        'agent_email': prop.get('agent_email'),
+                        'agent_phone': prop.get('agent_phone'),
+                        'broker_name': prop.get('broker_name'),
+                        'mls_id': prop.get('mls_id'),
+                        'primary_photo': prop.get('primary_photo'),
+                        'photos': prop.get('photos', []),
+                        'description': prop.get('description'),
                         'raw_data': {
-                            'original_list_price': safe_float(row.get('original_list_price')),
-                            'days_on_market': safe_int(row.get('days_on_market')),
-                            'price_reduction_count': safe_int(row.get('price_reduction_count')),
-                            'off_market_date': safe_str(row.get('off_market_date')),
-                            'last_sold_date': safe_str(row.get('last_sold_date')),
-                            'last_sold_price': safe_float(row.get('last_sold_price')),
-                            'hoa_fee': safe_float(row.get('hoa_fee')),
-                            'stories': safe_int(row.get('stories')),
-                            'garage': safe_str(row.get('garage')),
-                            'pool': safe_str(row.get('pool')),
-                            'style': safe_str(row.get('style')),
+                            'original_list_price': prop.get('original_list_price'),
+                            'days_on_market': prop.get('days_on_mls'),
+                            'price_reduction_count': prop.get('price_reduction_count'),
+                            'off_market_date': prop.get('off_market_date'),
+                            'last_sold_date': prop.get('last_sold_date'),
+                            'last_sold_price': prop.get('last_sold_price'),
+                            'hoa_fee': prop.get('hoa_fee'),
+                            'stories': prop.get('stories'),
+                            'garage': prop.get('garage'),
+                            'pool': prop.get('pool'),
+                            'style': prop.get('style'),
                         }
-                    }
-                    properties.append(prop)
+                    })
 
                 result = {
                     "success": True,
@@ -137,17 +109,25 @@ class handler(BaseHTTPRequestHandler):
                     "count": len(properties)
                 }
 
+            print(f"Scraped {result['count']} properties")
+
+            # Send response
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps(result).encode())
 
         except Exception as e:
-            error_result = {
-                "success": False,
-                "error": str(e)
-            }
+            print(f"Error: {str(e)}")
+            print(traceback.format_exc())
+
             self.send_response(500)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
+
+            error_result = {
+                "success": False,
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            }
             self.wfile.write(json.dumps(error_result).encode())

@@ -5,6 +5,13 @@ import { sql } from '@vercel/postgres';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// Normalize status values to match our filter values
+function normalizeStatus(status: string): string {
+  if (!status) return 'off_market';
+  // Convert to lowercase and replace spaces with underscores
+  return status.toLowerCase().replace(/\s+/g, '_');
+}
+
 interface PropertyInput {
   property_id: string;
   full_street_line: string;
@@ -110,7 +117,7 @@ export async function POST(request: Request) {
               lot_sqft = ${prop.lot_sqft},
               year_built = ${prop.year_built},
               property_type = ${prop.property_type},
-              current_status = ${prop.current_status},
+              current_status = ${normalizeStatus(prop.current_status)},
               current_list_price = ${prop.current_list_price},
               agent_name = ${prop.agent_name},
               agent_email = ${prop.agent_email},
@@ -175,7 +182,7 @@ export async function POST(request: Request) {
               ${prop.lot_sqft},
               ${prop.year_built},
               ${prop.property_type},
-              ${prop.current_status},
+              ${normalizeStatus(prop.current_status)},
               ${prop.current_list_price},
               ${prop.list_date || null},
               ${prop.current_list_price},

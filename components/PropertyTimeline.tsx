@@ -162,7 +162,12 @@ export default function PropertyTimeline({ propertyId }: PropertyTimelineProps) 
                   <div className="text-sm">
                     <span className="font-medium text-green-600">
                       -{formatPrice(event.price_change_amount)}
-                      ({(event.price_change_percent ?? 0).toFixed(1)}%)
+                      ({(() => {
+                        const percent = typeof event.price_change_percent === 'string'
+                          ? parseFloat(event.price_change_percent)
+                          : (event.price_change_percent ?? 0);
+                        return !isNaN(percent) ? percent.toFixed(1) : '0.0';
+                      })()}%)
                     </span>
                   </div>
                 </div>

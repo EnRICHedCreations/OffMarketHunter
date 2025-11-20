@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -55,13 +56,85 @@ const navigation = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <>
-      {/* Mobile sidebar backdrop */}
-      <div className="lg:hidden fixed inset-0 z-40 bg-gray-600 bg-opacity-75 hidden" id="sidebar-backdrop"></div>
+      {/* Mobile menu button */}
+      <div className="lg:hidden fixed top-0 left-0 z-50 p-4">
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+        >
+          <span className="sr-only">Open menu</span>
+          {mobileMenuOpen ? (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
+      </div>
 
-      {/* Sidebar */}
+      {/* Mobile sidebar backdrop */}
+      {mobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-gray-600 bg-opacity-75"
+          onClick={() => setMobileMenuOpen(false)}
+        ></div>
+      )}
+
+      {/* Mobile Sidebar */}
+      <div className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out ${
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex min-h-0 flex-1 flex-col border-r border-gray-200 bg-white h-full">
+          <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
+            <div className="flex items-center justify-between px-4">
+              <h1 className="text-2xl font-bold text-indigo-600">
+                OffMarket Hunter
+              </h1>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-500"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <nav className="mt-8 flex-1 space-y-1 px-2">
+              {navigation.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`
+                      group flex items-center px-2 py-2 text-sm font-medium rounded-md transition
+                      ${isActive
+                        ? 'bg-indigo-50 text-indigo-600'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      }
+                    `}
+                  >
+                    <span className={`mr-3 ${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500'}`}>
+                      {item.icon}
+                    </span>
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex min-h-0 flex-1 flex-col border-r border-gray-200 bg-white">
           <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">

@@ -42,7 +42,7 @@ export default function Header({ user }: HeaderProps) {
     <header className="bg-white border-b border-gray-200">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center">
+          <div className="flex items-center lg:ml-0 ml-12">
             <h2 className="text-2xl font-semibold text-gray-900">
               Dashboard
             </h2>

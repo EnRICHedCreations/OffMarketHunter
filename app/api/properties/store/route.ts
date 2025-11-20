@@ -326,20 +326,74 @@ export async function POST(request: Request) {
     `;
 
     // Auto-calculate motivation scores for properties in this watchlist
+    // We'll do this inline instead of calling the API to avoid auth issues
     try {
-      const baseUrl = process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : 'http://localhost:3000';
+      const propertiesResult = await sql`
+        SELECT p.*
+        FROM properties p
+        WHERE p.watchlist_id = ${watchlist_id}
+      `;
 
-      await fetch(`${baseUrl}/api/properties/calculate-scores`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          watchlist_id: watchlist_id,
-        }),
-      });
+      for (const property of propertiesResult.rows) {
+        try {
+          // Fetch property history
+          const historyResult = await sql`
+            SELECT * FROM property_history
+            WHERE property_id = ${property.id}
+            ORDER BY event_date DESC
+          `;
+
+          // Prepare data for scoring
+          const propertyData = {
+            days_on_market: property.raw_data?.days_on_market || 0,
+            price_reduction_count: property.price_reduction_count || 0,
+            total_price_reduction_percent: property.total_price_reduction_percent || 0,
+            current_status: property.current_status,
+            list_date: property.list_date,
+          };
+
+          // Call Python scoring endpoint
+          const baseUrl = process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : 'http://localhost:3000';
+
+          const scoringResponse = await fetch(`${baseUrl}/api/score_motivation`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              property: propertyData,
+              history: historyResult.rows,
+              market: {
+                avg_days_on_market: 60,
+              },
+            }),
+          });
+
+          if (scoringResponse.ok) {
+            const scoringData = await scoringResponse.json();
+            const score = scoringData.score;
+
+            // Update property with scores
+            await sql`
+              UPDATE properties
+              SET
+                motivation_score = ${score.total},
+                motivation_score_dom = ${score.dom_component},
+                motivation_score_reductions = ${score.reduction_component},
+                motivation_score_off_market = ${score.off_market_component},
+                motivation_score_status = ${score.status_component},
+                motivation_score_market = ${score.market_component},
+                updated_at = NOW()
+              WHERE id = ${property.id}
+            `;
+          }
+        } catch (scoreError) {
+          console.error(`Error scoring property ${property.id}:`, scoreError);
+          // Continue with next property
+        }
+      }
     } catch (scoreError) {
       console.error('Error auto-calculating scores:', scoreError);
       // Don't fail the whole operation if score calculation fails

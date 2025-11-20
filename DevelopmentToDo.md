@@ -241,26 +241,40 @@
 - maxDuration set to 300s (5 minutes) for long-running scrapes
 - Oldest watchlists processed first (ORDER BY last_scraped_at ASC)
 
-## 📋 Todo (Upcoming Phases)
+### Phase 8: Alert System (Complete)
+- [x] Create alert generation logic
+  - [x] Check motivation score vs threshold in store endpoint
+  - [x] Create alert record automatically for high-motivation properties
+  - [x] Prevent duplicate alerts with NOT EXISTS check
+  - [x] Only alert on recently added properties (last hour)
+- [x] Build alerts page UI (`app/alerts/page.tsx`)
+  - [x] List view with property details, photos, and motivation scores
+  - [x] Unread highlighting with visual indicators
+  - [x] Filter by type (All/Unread/High Motivation)
+  - [x] Mark as read functionality
+  - [x] Delete/dismiss alerts
+  - [x] Mark all as read bulk action
+  - [x] Empty states and loading indicators
+  - [x] Relative time formatting
+- [x] Implement alert API endpoints
+  - [x] `GET /api/alerts` - Get user's alerts with filters
+  - [x] `PUT /api/alerts/by-id?id=X` - Mark as read (query param workaround)
+  - [x] `DELETE /api/alerts/by-id?id=X` - Dismiss alert (query param workaround)
+  - [x] `PUT /api/alerts/read-all` - Mark all as read
+- [x] Add alert badge to header
+  - [x] Show unread count with red badge
+  - [x] Auto-refresh every 60 seconds
+  - [x] Link to alerts page
+  - [x] Bell icon with notification badge
+- [x] Fix TypeScript errors in query composition
 
-### Phase 8: Alert System
-- [ ] Create alert generation logic
-  - [ ] Check motivation score vs threshold
-  - [ ] Create alert record
-  - [ ] Determine alert type
-- [ ] Build alerts page UI (`app/alerts/page.tsx`)
-  - [ ] List view of all alerts
-  - [ ] Unread highlighting
-  - [ ] Filter by type (All/Unread/By Type)
-- [ ] Implement alert API endpoints
-  - [ ] `GET /api/alerts` - Get user's alerts
-  - [ ] `PUT /api/alerts/[id]/read` - Mark as read
-  - [ ] `DELETE /api/alerts/[id]` - Dismiss alert
-  - [ ] `PUT /api/alerts/read-all` - Mark all as read
-- [ ] Add alert badge to header
-  - [ ] Show unread count
-  - [ ] Link to alerts page
-- [ ] Create alert notification component
+**Key Lessons Learned:**
+- SQL template literal composition requires separate complete queries, not dynamic interpolation
+- Time-based filtering prevents alert spam on bulk property imports
+- Polling every 60 seconds provides near real-time updates without excessive API calls
+- Query parameter workaround pattern continues for consistency
+
+## 📋 Todo (Upcoming Phases)
 
 ### Phase 9: Email Notifications (Optional for MVP)
 - [ ] Set up Resend API key
@@ -342,7 +356,13 @@ offmarkethunter/
 │   ├── (auth)/
 │   │   ├── login/page.tsx
 │   │   └── signup/page.tsx
+│   ├── alerts/
+│   │   └── page.tsx (alerts page with filtering)
 │   ├── api/
+│   │   ├── alerts/
+│   │   │   ├── by-id/route.ts (PUT, DELETE - query param workaround)
+│   │   │   ├── read-all/route.ts (PUT - mark all as read)
+│   │   │   └── route.ts (GET - list alerts with filters)
 │   │   ├── auth/
 │   │   │   ├── [...nextauth]/route.ts
 │   │   │   └── signup/route.ts
@@ -353,7 +373,7 @@ offmarkethunter/
 │   │   │   ├── history/route.ts (GET)
 │   │   │   ├── route.ts (GET - list properties)
 │   │   │   ├── score/route.ts (POST - manual scoring)
-│   │   │   └── store/route.ts (POST - save scraped properties)
+│   │   │   └── store/route.ts (POST - save scraped properties + alert generation)
 │   │   └── watchlists/
 │   │       ├── by-id/route.ts (GET, PUT, DELETE - query param workaround)
 │   │       └── route.ts (GET, POST)
@@ -372,7 +392,7 @@ offmarkethunter/
 │   ├── layout.tsx
 │   └── page.tsx (landing page)
 ├── components/
-│   ├── Header.tsx
+│   ├── Header.tsx (with unread alert badge)
 │   ├── MotivationScoreBreakdown.tsx
 │   ├── PropertyCard.tsx
 │   ├── PropertyTimeline.tsx
@@ -397,29 +417,30 @@ offmarkethunter/
 └── tsconfig.json
 ```
 
-## 🚀 Next Immediate Steps - Phase 8: Alert System
+## 🚀 Next Immediate Steps - Phase 9: Email Notifications (Optional)
 
-1. **Create Alert Generation Logic**
-   - Check motivation score vs user threshold
-   - Create alert records in database
-   - Determine alert type (new property, price drop, high motivation)
+1. **Set up Email Provider**
+   - Configure Resend API key
+   - Set up verified sender domain
+   - Test email delivery
 
-2. **Build Alerts Page UI**
-   - List view of all alerts
-   - Unread highlighting
-   - Filter by type and read status
-   - Mark as read functionality
+2. **Create Email Templates**
+   - New high-motivation property email
+   - Price reduction notification email
+   - Daily digest email with summary
+   - HTML and plain text versions
 
-3. **Implement Alert API Endpoints**
-   - GET /api/alerts - Get user's alerts
-   - PUT /api/alerts/[id]/read - Mark as read
-   - DELETE /api/alerts/[id] - Dismiss alert
-   - PUT /api/alerts/read-all - Mark all as read
+3. **Implement Email Logic**
+   - Send on alert creation based on user preferences
+   - Respect quiet hours settings
+   - Include property details and links
+   - Unsubscribe functionality
 
-4. **Add Alert Badge to Header**
-   - Show unread count
-   - Real-time updates
-   - Link to alerts page
+4. **User Preferences**
+   - Toggle email notifications on/off
+   - Select alert types to receive
+   - Set quiet hours time range
+   - Configure digest frequency
 
 ## 📊 Overall Progress
 
@@ -430,12 +451,13 @@ offmarkethunter/
 **Phase 5 (Historical Tracking):** 100% Complete ✅
 **Phase 6 (Motivation Scoring):** 100% Complete ✅
 **Phase 7 (Cron Jobs):** 100% Complete ✅
-**Phase 8-12:** 0% Complete
-**Overall Project:** ~58% Complete
+**Phase 8 (Alert System):** 100% Complete ✅
+**Phase 9-12:** 0% Complete
+**Overall Project:** ~67% Complete
 
 ## 🎯 Current Focus
 
-Phase 7 is complete - automated cron jobs working! 🎉
+Phase 8 is complete - alert system working! 🎉
 
 **What's Working Now:**
 1. Properties are automatically saved to database after scraping
@@ -465,25 +487,32 @@ Phase 7 is complete - automated cron jobs working! 🎉
     - Automatic history tracking
 17. Hands-free property monitoring
 18. No more manual "Scan Now" clicks required
+19. **Alert System:**
+    - Automatic alert generation for high-motivation properties
+    - Alerts page with filtering (all, unread, high motivation)
+    - Mark as read and delete functionality
+    - Unread badge in header with auto-refresh
+    - Property details, photos, and scores in alerts
+    - Bulk "mark all as read" action
 
-**Next up - Phase 8: Alert System**
-1. Create alert generation logic based on motivation scores
-2. Build alerts page UI
-3. Implement alert API endpoints
-4. Add unread alert badge to header
-5. Notify users of high-motivation properties automatically
+**Next up - Phase 9: Email Notifications (Optional for MVP)**
+1. Set up Resend email provider
+2. Create email templates for alerts
+3. Implement email sending logic
+4. User preferences for email notifications
+5. Or skip to Phase 10: Polish & Testing for MVP launch
 
 ## 🔗 Dependencies Between Phases
 
-- Phase 2 (Watchlists) depends on Phase 1 (Auth) being complete
-- Phase 3 (Python) can start independently
-- Phase 4 (Properties) depends on Phases 2 & 3
-- Phase 5 (History) depends on Phase 4
-- Phase 6 (Scoring) depends on Phase 4
-- Phase 7 (Cron) depends on Phases 3, 4, 5, 6
-- Phase 8 (Alerts) depends on Phase 6
-- Phase 9 (Email) depends on Phase 8
-- Phases 10-12 can happen in parallel after Phase 8
+- Phase 2 (Watchlists) depends on Phase 1 (Auth) being complete ✅
+- Phase 3 (Python) can start independently ✅
+- Phase 4 (Properties) depends on Phases 2 & 3 ✅
+- Phase 5 (History) depends on Phase 4 ✅
+- Phase 6 (Scoring) depends on Phase 4 ✅
+- Phase 7 (Cron) depends on Phases 3, 4, 5, 6 ✅
+- Phase 8 (Alerts) depends on Phase 6 ✅
+- Phase 9 (Email) depends on Phase 8 (optional)
+- Phases 10-12 can happen in parallel after Phase 8 ✅
 
 ## 📝 Notes
 

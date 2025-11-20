@@ -3,6 +3,9 @@ import { auth } from '@/auth';
 import { sql } from '@vercel/postgres';
 import { scrapeOffMarketProperties } from '@/lib/scraper';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // POST /api/watchlists/[id]/scrape - Trigger scraping for a watchlist
 export async function POST(
   request: Request,

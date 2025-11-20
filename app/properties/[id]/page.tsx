@@ -166,19 +166,19 @@ export default async function PropertyDetailPage({
 
           {/* Property Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-            {property.beds !== null && (
+            {property.beds != null && (
               <div>
                 <div className="text-sm text-gray-500">Bedrooms</div>
                 <div className="text-xl font-semibold text-gray-900">{property.beds}</div>
               </div>
             )}
-            {property.baths !== null && (
+            {property.baths != null && (
               <div>
                 <div className="text-sm text-gray-500">Bathrooms</div>
                 <div className="text-xl font-semibold text-gray-900">{property.baths}</div>
               </div>
             )}
-            {property.sqft !== null && (
+            {property.sqft != null && (
               <div>
                 <div className="text-sm text-gray-500">Square Feet</div>
                 <div className="text-xl font-semibold text-gray-900">
@@ -186,7 +186,7 @@ export default async function PropertyDetailPage({
                 </div>
               </div>
             )}
-            {property.lot_sqft !== null && (
+            {property.lot_sqft != null && (
               <div>
                 <div className="text-sm text-gray-500">Lot Size</div>
                 <div className="text-xl font-semibold text-gray-900">
@@ -194,7 +194,7 @@ export default async function PropertyDetailPage({
                 </div>
               </div>
             )}
-            {property.year_built !== null && (
+            {property.year_built != null && (
               <div>
                 <div className="text-sm text-gray-500">Year Built</div>
                 <div className="text-xl font-semibold text-gray-900">{property.year_built}</div>

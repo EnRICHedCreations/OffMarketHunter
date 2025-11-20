@@ -25,7 +25,7 @@ class handler(BaseHTTPRequestHandler):
             params = {
                 'location': criteria['location'],
                 'listing_type': 'off_market' if scrape_type == 'off_market' else 'for_sale',
-                'limit': 100,
+                'limit': 1000,  # Increased from 100 to fetch more properties
             }
 
             # Add filters

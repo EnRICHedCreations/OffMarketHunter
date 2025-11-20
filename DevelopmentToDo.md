@@ -47,34 +47,53 @@
   - [x] "Create Your First Watchlist" button
   - [x] Database queries for dashboard stats
 
+### Phase 2: Watchlist Management (Complete)
+- [x] Set up Vercel Postgres database
+  - [x] Create database on Vercel
+  - [x] Copy connection strings to `.env`
+  - [x] Execute schema.sql
+  - [x] Verify tables and indexes created
+- [x] Create watchlists page UI (`app/watchlists/page.tsx`)
+  - [x] List view with cards
+  - [x] Empty state for no watchlists
+  - [x] Property count display per watchlist
+- [x] Build "Add Watchlist" form component (`app/watchlists/new/page.tsx`)
+  - [x] Location input
+  - [x] Price range filters (min/max)
+  - [x] Property criteria inputs (beds, baths, sqft, lot size, year built)
+  - [x] Property type selection (single family, multi family, condo, townhouse, land)
+  - [x] Monitoring options checkboxes (off-market, price reductions, expired)
+  - [x] Alert threshold slider
+  - [x] Form validation with Zod
+- [x] Implement watchlist CRUD API endpoints
+  - [x] `GET /api/watchlists` - List user's watchlists with property counts
+  - [x] `POST /api/watchlists` - Create watchlist
+  - [x] `GET /api/watchlists/[id]` - Get single watchlist
+  - [x] `PUT /api/watchlists/[id]` - Update watchlist
+  - [x] `DELETE /api/watchlists/[id]` - Delete watchlist (cascades to properties)
+- [x] Add watchlist list view with cards (`components/WatchlistCard.tsx`)
+  - [x] Display location, price range, bed range
+  - [x] Show monitoring options as badges
+  - [x] Property count display
+- [x] Create edit watchlist functionality (`app/watchlists/[id]/edit/page.tsx`)
+  - [x] Pre-populate form with existing data
+  - [x] Same editing capabilities as create
+- [x] Add delete confirmation dialog
+  - [x] Modal with warning about cascading deletes
+  - [x] Prevent accidental deletions
+- [x] Implement active/inactive toggle
+  - [x] Toggle button on watchlist cards
+  - [x] Visual indication of inactive watchlists
+- [x] Add user ownership verification on all API routes
+- [x] Fix Next.js 16 async params compatibility
+
 ## 🔄 In Progress
 
-### Phase 2: Watchlist Management
-- [ ] Set up Vercel Postgres database
-  - [ ] Create database on Vercel
-  - [ ] Copy connection strings to `.env`
-  - [ ] Execute schema.sql
-  - [ ] Verify tables and indexes created
+### Phase 3: Python Integration
+- [ ] Set up Vercel Python runtime
+- [ ] Install HomeHarvest Elite library
 
 ## 📋 Todo (Upcoming Phases)
-
-### Phase 2: Watchlist Management
-- [ ] Create watchlists page UI (`app/watchlists/page.tsx`)
-- [ ] Build "Add Watchlist" form component
-  - [ ] Location input
-  - [ ] Price range filters
-  - [ ] Property criteria inputs
-  - [ ] Monitoring options checkboxes
-  - [ ] Form validation with Zod
-- [ ] Implement watchlist CRUD API endpoints
-  - [ ] `GET /api/watchlists` - List user's watchlists
-  - [ ] `POST /api/watchlists` - Create watchlist
-  - [ ] `PUT /api/watchlists/[id]` - Update watchlist
-  - [ ] `DELETE /api/watchlists/[id]` - Delete watchlist
-- [ ] Add watchlist list view with cards
-- [ ] Create edit watchlist functionality
-- [ ] Add delete confirmation dialog
-- [ ] Implement active/inactive toggle
 
 ### Phase 3: Python Integration
 - [ ] Set up Vercel Python runtime
@@ -264,20 +283,32 @@ offmarkethunter/
 │   │   └── signup/
 │   │       └── page.tsx
 │   ├── api/
-│   │   └── auth/
-│   │       ├── [...nextauth]/
-│   │       │   └── route.ts
-│   │       └── signup/
-│   │           └── route.ts
+│   │   ├── auth/
+│   │   │   ├── [...nextauth]/
+│   │   │   │   └── route.ts
+│   │   │   └── signup/
+│   │   │       └── route.ts
+│   │   └── watchlists/
+│   │       ├── [id]/
+│   │       │   └── route.ts (GET, PUT, DELETE)
+│   │       └── route.ts (GET, POST)
 │   ├── dashboard/
 │   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── watchlists/
+│   │   ├── [id]/
+│   │   │   └── edit/
+│   │   │       └── page.tsx
+│   │   ├── new/
+│   │   │   └── page.tsx
 │   │   └── page.tsx
 │   ├── globals.css
 │   ├── layout.tsx
 │   └── page.tsx (landing page)
 ├── components/
 │   ├── Header.tsx
-│   └── Sidebar.tsx
+│   ├── Sidebar.tsx
+│   └── WatchlistCard.tsx
 ├── lib/
 │   └── db/
 │       └── schema.sql
@@ -298,36 +329,38 @@ offmarkethunter/
 
 ## 🚀 Next Immediate Steps
 
-1. **Set up Vercel Postgres database** (Required before testing)
-   - Go to Vercel dashboard
-   - Create new Postgres (Neon) database
-   - Copy connection strings to `.env` file
-   - Execute `lib/db/schema.sql` to create tables
+1. **Test Watchlist Management on Production**
+   - Create a test watchlist
+   - Edit watchlist settings
+   - Toggle active/inactive
+   - Delete watchlist
+   - Verify all CRUD operations work
 
-2. **Test authentication flow**
-   - Run dev server: `npm run dev`
-   - Test user signup
-   - Test user login
-   - Verify dashboard access
+2. **Start Phase 3: Python Integration**
+   - Set up Vercel Python runtime for API routes
+   - Install HomeHarvest Elite library
+   - Create `/api/scrape-off-market` endpoint
+   - Test scraping with real Realtor.com data
 
-3. **Start Phase 2: Watchlist Management**
-   - Create watchlists page UI
-   - Build "Add Watchlist" form
-   - Implement watchlist CRUD API endpoints
-   - Test watchlist creation and management
+3. **Begin Phase 4: Property Storage**
+   - Create property storage logic for scraped data
+   - Build property card component
+   - Display properties on dashboard
 
 ## 📊 Overall Progress
 
-**Phase 1 (Foundation):** 100% Complete
-**Phase 2 (Watchlists):** 0% Complete
-**Phase 3-12:** 0% Complete
-**Overall Project:** ~8% Complete
+**Phase 1 (Foundation):** 100% Complete ✅
+**Phase 2 (Watchlists):** 100% Complete ✅
+**Phase 3 (Python Integration):** 0% Complete
+**Phase 4-12:** 0% Complete
+**Overall Project:** ~17% Complete
 
 ## 🎯 Current Focus
 
-Phase 1 is complete! Ready to:
-1. Set up Vercel database and test authentication
-2. Begin Phase 2: Watchlist Management system
+Phase 2 is complete! Ready to:
+1. Test watchlist functionality on production
+2. Begin Phase 3: Python Integration with HomeHarvest Elite
+3. Start scraping off-market property data
 
 ## 🔗 Dependencies Between Phases
 

@@ -327,12 +327,15 @@ export async function POST(request: Request) {
 
     // Auto-calculate motivation scores for properties in this watchlist
     // We'll do this inline instead of calling the API to avoid auth issues
+    console.log('[SCORE] Starting auto-calculation for watchlist:', watchlist_id);
     try {
       const propertiesResult = await sql`
         SELECT p.*
         FROM properties p
         WHERE p.watchlist_id = ${watchlist_id}
       `;
+
+      console.log('[SCORE] Found', propertiesResult.rows.length, 'properties to score');
 
       for (const property of propertiesResult.rows) {
         try {
@@ -357,7 +360,10 @@ export async function POST(request: Request) {
             ? `https://${process.env.VERCEL_URL}`
             : 'http://localhost:3000';
 
-          const scoringResponse = await fetch(`${baseUrl}/api/score_motivation`, {
+          const scoringUrl = `${baseUrl}/api/score_motivation`;
+          console.log('[SCORE] Calling scoring API:', scoringUrl, 'for property:', property.id);
+
+          const scoringResponse = await fetch(scoringUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -371,8 +377,11 @@ export async function POST(request: Request) {
             }),
           });
 
+          console.log('[SCORE] Response status:', scoringResponse.status);
+
           if (scoringResponse.ok) {
             const scoringData = await scoringResponse.json();
+            console.log('[SCORE] Received score data:', scoringData);
             const score = scoringData.score;
 
             // Update property with scores
@@ -388,6 +397,10 @@ export async function POST(request: Request) {
                 updated_at = NOW()
               WHERE id = ${property.id}
             `;
+            console.log('[SCORE] Successfully updated property', property.id, 'with score:', score.total);
+          } else {
+            const errorText = await scoringResponse.text();
+            console.error('[SCORE] Scoring failed:', scoringResponse.status, errorText);
           }
         } catch (scoreError) {
           console.error(`Error scoring property ${property.id}:`, scoreError);

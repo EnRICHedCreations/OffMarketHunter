@@ -1,0 +1,8 @@
+# Python dependencies for OffMarket Hunter
+# Required for property scraping with HomeHarvest Elite
+
+pandas>=2.0.0
+requests>=2.31.0
+
+# HomeHarvest Elite will be imported from the parent directory
+# Clone from: https://github.com/EnRICHedCreations/HomeHarvestElite.git

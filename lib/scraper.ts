@@ -1,5 +1,8 @@
 // Scraper utility for HomeHarvest Elite integration
-// This will be called from API routes to scrape property data
+// Calls Python script to scrape property data from Realtor.com
+
+import { spawn } from 'child_process';
+import path from 'path';
 
 interface WatchlistCriteria {
   location: string;
@@ -47,99 +50,111 @@ interface ScrapedProperty {
   raw_data: any;
 }
 
+async function callPythonScraper(
+  scrapeType: 'off_market' | 'active',
+  criteria: WatchlistCriteria,
+  updatedHours?: number
+): Promise<ScrapedProperty[]> {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(process.cwd(), 'scripts', 'scrape_properties.py');
+
+    // Prepare input data
+    const inputData = {
+      type: scrapeType,
+      criteria: {
+        location: criteria.location,
+        price_min: criteria.price_min,
+        price_max: criteria.price_max,
+        beds_min: criteria.beds_min,
+        beds_max: criteria.beds_max,
+        baths_min: criteria.baths_min,
+        baths_max: criteria.baths_max,
+        sqft_min: criteria.sqft_min,
+        sqft_max: criteria.sqft_max,
+        lot_sqft_min: criteria.lot_sqft_min,
+        lot_sqft_max: criteria.lot_sqft_max,
+        year_built_min: criteria.year_built_min,
+        year_built_max: criteria.year_built_max,
+        property_types: criteria.property_types,
+      },
+      updated_hours: updatedHours,
+    };
+
+    // Spawn Python process
+    const python = spawn('python', [scriptPath]);
+
+    let stdout = '';
+    let stderr = '';
+
+    // Send input data to Python script
+    python.stdin.write(JSON.stringify(inputData));
+    python.stdin.end();
+
+    // Collect output
+    python.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    python.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    // Handle completion
+    python.on('close', (code) => {
+      if (code !== 0) {
+        console.error('Python script error:', stderr);
+        reject(new Error(`Python script failed with code ${code}: ${stderr}`));
+        return;
+      }
+
+      try {
+        const result = JSON.parse(stdout);
+
+        if (!result.success) {
+          reject(new Error(result.error || 'Unknown error from Python script'));
+          return;
+        }
+
+        resolve(result.properties || []);
+      } catch (error) {
+        reject(new Error(`Failed to parse Python output: ${error}`));
+      }
+    });
+
+    // Handle errors
+    python.on('error', (error) => {
+      reject(new Error(`Failed to start Python script: ${error.message}`));
+    });
+  });
+}
+
 export async function scrapeOffMarketProperties(
   criteria: WatchlistCriteria
 ): Promise<ScrapedProperty[]> {
-  // For now, return mock data
-  // In production, this would call HomeHarvest Elite Python script
-  // via a child process or external service
-
   console.log('Scraping off-market properties for:', criteria.location);
 
-  // Mock data structure matching HomeHarvest Elite output
-  const mockProperties: ScrapedProperty[] = [
-    {
-      property_id: `mock_${Date.now()}_1`,
-      full_street_line: '123 Main St',
-      city: criteria.location.split(',')[0].trim(),
-      state: 'AZ',
-      zip_code: '85001',
-      county: 'Maricopa',
-      latitude: 33.4484,
-      longitude: -112.0740,
-      beds: 3,
-      baths: 2,
-      sqft: 1500,
-      lot_sqft: 7000,
-      year_built: 2005,
-      property_type: 'single_family',
-      current_status: 'off_market',
-      current_list_price: 350000,
-      list_date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-      agent_name: 'John Smith',
-      agent_email: 'john@example.com',
-      agent_phone: '(555) 123-4567',
-      broker_name: 'ABC Realty',
-      mls_id: 'MLS123456',
-      primary_photo: 'https://via.placeholder.com/400x300',
-      photos: ['https://via.placeholder.com/400x300'],
-      description: 'Beautiful home in great neighborhood. Property went off-market after 45 days.',
-      raw_data: {
-        original_list_price: 375000,
-        days_on_market: 45,
-        price_reduction_count: 1,
-      },
-    },
-    {
-      property_id: `mock_${Date.now()}_2`,
-      full_street_line: '456 Oak Ave',
-      city: criteria.location.split(',')[0].trim(),
-      state: 'AZ',
-      zip_code: '85002',
-      beds: 4,
-      baths: 2.5,
-      sqft: 2100,
-      lot_sqft: 8500,
-      year_built: 2010,
-      property_type: 'single_family',
-      current_status: 'off_market',
-      current_list_price: 425000,
-      list_date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-      agent_name: 'Jane Doe',
-      agent_phone: '(555) 987-6543',
-      broker_name: 'XYZ Properties',
-      primary_photo: 'https://via.placeholder.com/400x300',
-      photos: ['https://via.placeholder.com/400x300'],
-      description: 'Spacious family home. Off-market for 60 days with price reductions.',
-      raw_data: {
-        original_list_price: 450000,
-        days_on_market: 60,
-        price_reduction_count: 2,
-      },
-    },
-  ];
-
-  // Filter by criteria
-  return mockProperties.filter(prop => {
-    if (criteria.price_min && prop.current_list_price && prop.current_list_price < criteria.price_min) return false;
-    if (criteria.price_max && prop.current_list_price && prop.current_list_price > criteria.price_max) return false;
-    if (criteria.beds_min && prop.beds && prop.beds < criteria.beds_min) return false;
-    if (criteria.beds_max && prop.beds && prop.beds > criteria.beds_max) return false;
-    if (criteria.sqft_min && prop.sqft && prop.sqft < criteria.sqft_min) return false;
-    if (criteria.sqft_max && prop.sqft && prop.sqft > criteria.sqft_max) return false;
-    return true;
-  });
+  try {
+    const properties = await callPythonScraper('off_market', criteria);
+    console.log(`Found ${properties.length} off-market properties`);
+    return properties;
+  } catch (error) {
+    console.error('Error scraping properties:', error);
+    throw error;
+  }
 }
 
 export async function scrapeActiveProperties(
   criteria: WatchlistCriteria,
   updatedInPastHours: number = 24
 ): Promise<ScrapedProperty[]> {
-  // For now, return empty array
-  // This would scrape for_sale properties updated recently
-  // to detect status changes and price reductions
-
   console.log(`Scraping active properties updated in past ${updatedInPastHours} hours`);
 
-  return [];
+  try {
+    const properties = await callPythonScraper('active', criteria, updatedInPastHours);
+    console.log(`Found ${properties.length} recently updated properties`);
+    return properties;
+  } catch (error) {
+    console.error('Error scraping active properties:', error);
+    throw error;
+  }
 }

@@ -25,6 +25,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Ensure API routes are included in deployment
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./app/api/**/*'],
+  },
 };
 
 export default nextConfig;

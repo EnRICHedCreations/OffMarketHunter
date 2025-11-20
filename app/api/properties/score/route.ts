@@ -89,6 +89,10 @@ async function calculateMotivationScore(
 
 export async function POST(request: Request) {
   try {
+    // Parse body once at the start
+    const body = await request.json();
+    const { watchlist_id } = body;
+
     // Check authentication (either user session OR cron secret)
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
@@ -97,10 +101,7 @@ export async function POST(request: Request) {
     let userId: number | null = null;
 
     if (isCronRequest) {
-      // Cron job request - we'll get user_id from watchlist
-      const body = await request.json();
-      const { watchlist_id } = body;
-
+      // Cron job request - get user_id from watchlist
       const watchlistResult = await sql`
         SELECT user_id FROM watchlists WHERE id = ${watchlist_id}
       `;
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
 
       userId = watchlistResult.rows[0].user_id;
     } else {
-      // Regular user request
+      // Regular user request - verify session
       const session = await auth();
       if (!session?.user?.id) {
         return NextResponse.json(
@@ -124,9 +125,6 @@ export async function POST(request: Request) {
       }
       userId = parseInt(session.user.id);
     }
-
-    const body = await request.json();
-    const { watchlist_id } = body;
 
     if (!watchlist_id) {
       return NextResponse.json(

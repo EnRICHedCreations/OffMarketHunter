@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import Link from 'next/link';
 
 const watchlistSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -115,22 +114,10 @@ export default function NewWatchlistPage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <Link
-            href="/watchlists"
-            className="text-gray-600 hover:text-gray-900 transition"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Create Watchlist</h1>
-            <p className="mt-2 text-gray-600">
-              Set up a new watchlist to track properties in your target area
-            </p>
-          </div>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900">Create Watchlist</h1>
+        <p className="mt-2 text-gray-600">
+          Set up a new watchlist to track properties in your target area
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow-sm p-6 space-y-8">
@@ -429,12 +416,13 @@ export default function NewWatchlistPage() {
           >
             {loading ? 'Creating...' : 'Create Watchlist'}
           </button>
-          <Link
-            href="/watchlists"
+          <button
+            type="button"
+            onClick={() => router.push('/watchlists')}
             className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition"
           >
             Cancel
-          </Link>
+          </button>
         </div>
       </form>
     </div>

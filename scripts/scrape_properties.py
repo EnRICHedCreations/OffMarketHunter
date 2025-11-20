@@ -7,15 +7,43 @@ Accepts JSON input and returns scraped properties as JSON
 import sys
 import json
 import os
+import pandas as pd
 
-# Add HomeHarvest Elite to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'HomeHarvest Elite'))
+# Add HomeHarvest Elite to path (one directory up from scripts/)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'HomeHarvest Elite'))
 
 try:
     from homeharvest import scrape_property
 except ImportError:
     print(json.dumps({"error": "HomeHarvest Elite not found. Please ensure it's in the parent directory."}))
     sys.exit(1)
+
+
+def safe_int(value):
+    """Convert to int, handling NaN and None"""
+    if pd.isna(value) or value is None:
+        return None
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return None
+
+
+def safe_float(value):
+    """Convert to float, handling NaN and None"""
+    if pd.isna(value) or value is None:
+        return None
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
+
+def safe_str(value):
+    """Convert to string, handling NaN and None"""
+    if pd.isna(value) or value is None:
+        return None
+    return str(value)
 
 
 def scrape_off_market(criteria):
@@ -86,43 +114,43 @@ def scrape_off_market(criteria):
         properties = []
         for _, row in df.iterrows():
             prop = {
-                'property_id': str(row.get('property_id', '')),
-                'full_street_line': row.get('full_street_line', ''),
-                'city': row.get('city', ''),
-                'state': row.get('state', ''),
-                'zip_code': str(row.get('zip_code', '')),
-                'county': row.get('county'),
-                'latitude': float(row['latitude']) if 'latitude' in row and row['latitude'] is not None else None,
-                'longitude': float(row['longitude']) if 'longitude' in row and row['longitude'] is not None else None,
-                'beds': int(row['beds']) if 'beds' in row and row['beds'] is not None else None,
-                'baths': float(row['baths']) if 'baths' in row and row['baths'] is not None else None,
-                'sqft': int(row['sqft']) if 'sqft' in row and row['sqft'] is not None else None,
-                'lot_sqft': int(row['lot_sqft']) if 'lot_sqft' in row and row['lot_sqft'] is not None else None,
-                'year_built': int(row['year_built']) if 'year_built' in row and row['year_built'] is not None else None,
-                'property_type': row.get('property_type'),
-                'current_status': row.get('status', 'off_market'),
-                'current_list_price': float(row['list_price']) if 'list_price' in row and row['list_price'] is not None else None,
-                'list_date': row.get('list_date'),
-                'agent_name': row.get('agent_name'),
-                'agent_email': row.get('agent_email'),
-                'agent_phone': row.get('agent_phone'),
-                'broker_name': row.get('broker_name'),
-                'mls_id': row.get('mls_id'),
-                'primary_photo': row.get('primary_photo'),
-                'photos': row.get('photos', []),
-                'description': row.get('description'),
+                'property_id': safe_str(row.get('property_id')) or '',
+                'full_street_line': safe_str(row.get('full_street_line')) or '',
+                'city': safe_str(row.get('city')) or '',
+                'state': safe_str(row.get('state')) or '',
+                'zip_code': safe_str(row.get('zip_code')) or '',
+                'county': safe_str(row.get('county')),
+                'latitude': safe_float(row.get('latitude')),
+                'longitude': safe_float(row.get('longitude')),
+                'beds': safe_int(row.get('beds')),
+                'baths': safe_float(row.get('baths')),
+                'sqft': safe_int(row.get('sqft')),
+                'lot_sqft': safe_int(row.get('lot_sqft')),
+                'year_built': safe_int(row.get('year_built')),
+                'property_type': safe_str(row.get('property_type')),
+                'current_status': safe_str(row.get('status')) or 'off_market',
+                'current_list_price': safe_float(row.get('list_price')),
+                'list_date': safe_str(row.get('list_date')),
+                'agent_name': safe_str(row.get('agent_name')),
+                'agent_email': safe_str(row.get('agent_email')),
+                'agent_phone': safe_str(row.get('agent_phone')),
+                'broker_name': safe_str(row.get('broker_name')),
+                'mls_id': safe_str(row.get('mls_id')),
+                'primary_photo': safe_str(row.get('primary_photo')),
+                'photos': row.get('photos', []) if not pd.isna(row.get('photos')) else [],
+                'description': safe_str(row.get('description')),
                 'raw_data': {
-                    'original_list_price': float(row['original_list_price']) if 'original_list_price' in row and row['original_list_price'] is not None else None,
-                    'days_on_market': int(row['days_on_market']) if 'days_on_market' in row and row['days_on_market'] is not None else None,
-                    'price_reduction_count': int(row['price_reduction_count']) if 'price_reduction_count' in row and row['price_reduction_count'] is not None else None,
-                    'off_market_date': row.get('off_market_date'),
-                    'last_sold_date': row.get('last_sold_date'),
-                    'last_sold_price': float(row['last_sold_price']) if 'last_sold_price' in row and row['last_sold_price'] is not None else None,
-                    'hoa_fee': float(row['hoa_fee']) if 'hoa_fee' in row and row['hoa_fee'] is not None else None,
-                    'stories': int(row['stories']) if 'stories' in row and row['stories'] is not None else None,
-                    'garage': row.get('garage'),
-                    'pool': row.get('pool'),
-                    'style': row.get('style'),
+                    'original_list_price': safe_float(row.get('original_list_price')),
+                    'days_on_market': safe_int(row.get('days_on_market')),
+                    'price_reduction_count': safe_int(row.get('price_reduction_count')),
+                    'off_market_date': safe_str(row.get('off_market_date')),
+                    'last_sold_date': safe_str(row.get('last_sold_date')),
+                    'last_sold_price': safe_float(row.get('last_sold_price')),
+                    'hoa_fee': safe_float(row.get('hoa_fee')),
+                    'stories': safe_int(row.get('stories')),
+                    'garage': safe_str(row.get('garage')),
+                    'pool': safe_str(row.get('pool')),
+                    'style': safe_str(row.get('style')),
                 }
             }
             properties.append(prop)
@@ -167,17 +195,17 @@ def scrape_active_properties(criteria, updated_hours=24):
         properties = []
         for _, row in df.iterrows():
             prop = {
-                'property_id': str(row.get('property_id', '')),
-                'current_status': row.get('status', 'for_sale'),
-                'current_list_price': float(row['list_price']) if 'list_price' in row and row['list_price'] is not None else None,
-                'full_street_line': row.get('full_street_line', ''),
-                'city': row.get('city', ''),
-                'state': row.get('state', ''),
+                'property_id': safe_str(row.get('property_id')) or '',
+                'current_status': safe_str(row.get('status')) or 'for_sale',
+                'current_list_price': safe_float(row.get('list_price')),
+                'full_street_line': safe_str(row.get('full_street_line')) or '',
+                'city': safe_str(row.get('city')) or '',
+                'state': safe_str(row.get('state')) or '',
                 'raw_data': {
-                    'status_change_date': row.get('status_change_date'),
-                    'price_change_date': row.get('price_change_date'),
-                    'previous_status': row.get('previous_status'),
-                    'previous_price': float(row['previous_price']) if 'previous_price' in row and row['previous_price'] is not None else None,
+                    'status_change_date': safe_str(row.get('status_change_date')),
+                    'price_change_date': safe_str(row.get('price_change_date')),
+                    'previous_status': safe_str(row.get('previous_status')),
+                    'previous_price': safe_float(row.get('previous_price')),
                 }
             }
             properties.append(prop)

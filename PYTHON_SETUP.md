@@ -21,20 +21,20 @@ This will install:
 
 ### 2. HomeHarvest Elite Setup
 
-HomeHarvest Elite should already be cloned in the parent directory:
+HomeHarvest Elite should be cloned inside the offmarkethunter directory:
 
 ```
-Wholesailors/
+offmarkethunter/
 ├── HomeHarvest Elite/    # HomeHarvest Elite repository
-└── offmarkethunter/       # This Next.js app
+├── scripts/               # Python scraper scripts
+├── app/                   # Next.js app
+└── ...
 ```
 
-If not present, clone it:
+If not present, clone it from the offmarkethunter directory:
 
 ```bash
-cd ..
 git clone https://github.com/EnRICHedCreations/HomeHarvestElite.git "HomeHarvest Elite"
-cd offmarkethunter
 ```
 
 ### 3. Test Python Setup
@@ -68,9 +68,9 @@ You should see a JSON response (it expects input, so it will error, but Python s
 - Verify: `python --version` or `python3 --version`
 
 ### HomeHarvest Elite not found
-- Ensure it's cloned in the parent directory
+- Ensure it's cloned in the offmarkethunter directory
 - Check the path in `scripts/scrape_properties.py`
-- The script looks for: `../../HomeHarvest Elite`
+- The script looks for: `../HomeHarvest Elite` (relative to scripts/ directory)
 
 ### pandas/requests not installed
 ```bash

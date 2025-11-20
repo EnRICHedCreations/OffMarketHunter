@@ -28,6 +28,8 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<string | null>(null);
+  const [isScoring, setIsScoring] = useState(false);
+  const [scoreMessage, setScoreMessage] = useState<string | null>(null);
 
   const handleToggleActive = async () => {
     try {
@@ -133,6 +135,44 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
     }
   };
 
+  const handleScoreNow = async () => {
+    setIsScoring(true);
+    setScoreMessage(null);
+    try {
+      const scoreResponse = await fetch('/api/properties/score', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          watchlist_id: watchlist.id,
+        }),
+      });
+
+      const scoreResult = await scoreResponse.json();
+
+      if (scoreResponse.ok && scoreResult.success) {
+        setScoreMessage(
+          `Scored ${scoreResult.scored_count} / ${scoreResult.total_properties} properties`
+        );
+      } else {
+        setScoreMessage(scoreResult.error || 'Failed to score properties');
+      }
+
+      // Refresh after 3 seconds
+      setTimeout(() => {
+        router.refresh();
+        setScoreMessage(null);
+      }, 3000);
+
+    } catch (error) {
+      console.error('Error scoring properties:', error);
+      setScoreMessage('Failed to score properties');
+    } finally {
+      setIsScoring(false);
+    }
+  };
+
   const formatPrice = (price: number | null) => {
     if (!price) return null;
     return new Intl.NumberFormat('en-US', {
@@ -216,18 +256,37 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
             </div>
           )}
 
+          {scoreMessage && (
+            <div className={`mt-4 px-3 py-2 rounded text-sm ${
+              scoreMessage.includes('Failed') || scoreMessage.includes('error')
+                ? 'bg-red-50 text-red-700'
+                : 'bg-green-50 text-green-700'
+            }`}>
+              {scoreMessage}
+            </div>
+          )}
+
           <div className="pt-4 border-t border-gray-200">
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm text-gray-500">
                 <span className="font-semibold text-gray-900">{watchlist.property_count || 0}</span> properties
               </div>
-              <button
-                onClick={handleScanNow}
-                disabled={isScanning || !isActive}
-                className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isScanning ? 'Scanning...' : 'Scan Now'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleScanNow}
+                  disabled={isScanning || !isActive}
+                  className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isScanning ? 'Scanning...' : 'Scan Now'}
+                </button>
+                <button
+                  onClick={handleScoreNow}
+                  disabled={isScoring || (watchlist.property_count || 0) === 0}
+                  className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded-md hover:bg-purple-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isScoring ? 'Scoring...' : 'Score'}
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">

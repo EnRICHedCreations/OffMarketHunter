@@ -122,6 +122,7 @@ def calculate_motivation_score(property_data, property_history=None, market_data
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
+            # Allow internal calls without auth (no auth header required for server-to-server)
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))

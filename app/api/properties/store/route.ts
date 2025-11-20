@@ -95,42 +95,153 @@ export async function POST(request: Request) {
 
         // Check if property already exists
         const existingProperty = await sql`
-          SELECT id, current_list_price, current_status
+          SELECT
+            id,
+            current_list_price,
+            current_status,
+            price_reduction_count,
+            total_price_reduction_amount,
+            original_list_price
           FROM properties
           WHERE property_id = ${prop.property_id}
         `;
 
         if (existingProperty.rows.length > 0) {
+          const existing = existingProperty.rows[0];
+          const propertyDbId = existing.id;
+          const oldStatus = existing.current_status;
+          const oldPrice = existing.current_list_price;
+          const newStatus = normalizeStatus(prop.current_status);
+          const newPrice = prop.current_list_price;
+
+          // Track status changes
+          if (oldStatus && newStatus && oldStatus !== newStatus) {
+            await sql`
+              INSERT INTO property_history (
+                property_id,
+                event_type,
+                event_date,
+                old_status,
+                new_status
+              ) VALUES (
+                ${propertyDbId},
+                'status_change',
+                NOW(),
+                ${oldStatus},
+                ${newStatus}
+              )
+            `;
+          }
+
+          // Track price reductions
+          let priceReductionCount = existing.price_reduction_count || 0;
+          let totalReductionAmount = parseFloat(existing.total_price_reduction_amount) || 0;
+
+          if (oldPrice && newPrice && newPrice < oldPrice) {
+            const reductionAmount = oldPrice - newPrice;
+            const reductionPercent = (reductionAmount / oldPrice) * 100;
+
+            priceReductionCount++;
+            totalReductionAmount += reductionAmount;
+
+            await sql`
+              INSERT INTO property_history (
+                property_id,
+                event_type,
+                event_date,
+                old_price,
+                new_price,
+                price_change_amount,
+                price_change_percent
+              ) VALUES (
+                ${propertyDbId},
+                'price_reduction',
+                NOW(),
+                ${oldPrice},
+                ${newPrice},
+                ${reductionAmount},
+                ${reductionPercent}
+              )
+            `;
+          }
+
           // UPDATE existing property
-          await sql`
-            UPDATE properties SET
-              full_street_line = ${prop.full_street_line},
-              city = ${prop.city},
-              state = ${prop.state},
-              zip_code = ${prop.zip_code},
-              county = ${prop.county},
-              latitude = ${prop.latitude},
-              longitude = ${prop.longitude},
-              beds = ${prop.beds},
-              baths = ${prop.baths},
-              sqft = ${prop.sqft},
-              lot_sqft = ${prop.lot_sqft},
-              year_built = ${prop.year_built},
-              property_type = ${prop.property_type},
-              current_status = ${normalizeStatus(prop.current_status)},
-              current_list_price = ${prop.current_list_price},
-              agent_name = ${prop.agent_name},
-              agent_email = ${prop.agent_email},
-              agent_phone = ${prop.agent_phone},
-              broker_name = ${prop.broker_name},
-              mls_id = ${prop.mls_id},
-              primary_photo = ${prop.primary_photo},
-              photos = ${JSON.stringify(prop.photos || [])},
-              description_text = ${prop.description},
-              raw_data = ${JSON.stringify(prop.raw_data)},
-              updated_at = NOW()
-            WHERE property_id = ${prop.property_id}
-          `;
+          const originalPrice = existing.original_list_price || oldPrice || newPrice;
+          const totalReductionPercent = originalPrice
+            ? ((totalReductionAmount / originalPrice) * 100)
+            : 0;
+
+          // Determine if we should update last_price_reduction_date
+          const hadNewReduction = priceReductionCount > (existing.price_reduction_count || 0);
+
+          if (hadNewReduction) {
+            await sql`
+              UPDATE properties SET
+                full_street_line = ${prop.full_street_line},
+                city = ${prop.city},
+                state = ${prop.state},
+                zip_code = ${prop.zip_code},
+                county = ${prop.county},
+                latitude = ${prop.latitude},
+                longitude = ${prop.longitude},
+                beds = ${prop.beds},
+                baths = ${prop.baths},
+                sqft = ${prop.sqft},
+                lot_sqft = ${prop.lot_sqft},
+                year_built = ${prop.year_built},
+                property_type = ${prop.property_type},
+                current_status = ${normalizeStatus(prop.current_status)},
+                current_list_price = ${prop.current_list_price},
+                agent_name = ${prop.agent_name},
+                agent_email = ${prop.agent_email},
+                agent_phone = ${prop.agent_phone},
+                broker_name = ${prop.broker_name},
+                mls_id = ${prop.mls_id},
+                primary_photo = ${prop.primary_photo},
+                photos = ${JSON.stringify(prop.photos || [])},
+                description_text = ${prop.description},
+                raw_data = ${JSON.stringify(prop.raw_data)},
+                price_reduction_count = ${priceReductionCount},
+                total_price_reduction_amount = ${totalReductionAmount},
+                total_price_reduction_percent = ${totalReductionPercent},
+                last_price_reduction_date = NOW(),
+                updated_at = NOW()
+              WHERE property_id = ${prop.property_id}
+            `;
+          } else {
+            await sql`
+              UPDATE properties SET
+                full_street_line = ${prop.full_street_line},
+                city = ${prop.city},
+                state = ${prop.state},
+                zip_code = ${prop.zip_code},
+                county = ${prop.county},
+                latitude = ${prop.latitude},
+                longitude = ${prop.longitude},
+                beds = ${prop.beds},
+                baths = ${prop.baths},
+                sqft = ${prop.sqft},
+                lot_sqft = ${prop.lot_sqft},
+                year_built = ${prop.year_built},
+                property_type = ${prop.property_type},
+                current_status = ${normalizeStatus(prop.current_status)},
+                current_list_price = ${prop.current_list_price},
+                agent_name = ${prop.agent_name},
+                agent_email = ${prop.agent_email},
+                agent_phone = ${prop.agent_phone},
+                broker_name = ${prop.broker_name},
+                mls_id = ${prop.mls_id},
+                primary_photo = ${prop.primary_photo},
+                photos = ${JSON.stringify(prop.photos || [])},
+                description_text = ${prop.description},
+                raw_data = ${JSON.stringify(prop.raw_data)},
+                price_reduction_count = ${priceReductionCount},
+                total_price_reduction_amount = ${totalReductionAmount},
+                total_price_reduction_percent = ${totalReductionPercent},
+                updated_at = NOW()
+              WHERE property_id = ${prop.property_id}
+            `;
+          }
           updatedCount++;
         } else {
           // INSERT new property

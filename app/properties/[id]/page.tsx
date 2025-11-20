@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { sql } from '@vercel/postgres';
 import Image from 'next/image';
 import Link from 'next/link';
+import PropertyTimeline from '@/components/PropertyTimeline';
 
 interface Property {
   id: number;
@@ -285,15 +286,10 @@ export default async function PropertyDetailPage({
               </div>
             </div>
 
-            {/* Property History - Placeholder for Phase 5 */}
+            {/* Property History */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Property History</h2>
-              <div className="text-center py-8 text-gray-500">
-                <svg className="mx-auto w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p>Historical tracking coming in Phase 5</p>
-              </div>
+              <PropertyTimeline propertyId={property.id} />
             </div>
           </div>
 

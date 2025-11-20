@@ -157,23 +157,25 @@
   - [x] Additional details (MLS ID, last sold info, etc.)
   - [x] User ownership verification
 
-## 📋 Todo (Upcoming Phases)
+### Phase 5: Historical Tracking (Complete)
+- [x] Implement property_history table logic
+- [x] Create status change detection
+  - [x] Compare current vs stored status
+  - [x] Create history entry on change
+- [x] Create price reduction detection
+  - [x] Track price changes
+  - [x] Calculate reduction amounts and percentages
+  - [x] Increment reduction count
+  - [x] Update total_price_reduction_amount and percent
+- [x] Build property timeline component (PropertyTimeline.tsx)
+  - [x] Visual timeline UI with color-coded icons
+  - [x] Price changes with dates and amounts
+  - [x] Status changes with dates
+  - [x] Loading and empty states
+- [x] Display timeline on property detail page
+- [x] Create GET /api/properties/[id]/history endpoint
 
-### Phase 5: Historical Tracking
-- [ ] Implement property_history table logic
-- [ ] Create status change detection
-  - [ ] Compare current vs stored status
-  - [ ] Create history entry on change
-- [ ] Create price reduction detection
-  - [ ] Track price changes
-  - [ ] Calculate reduction amounts and percentages
-  - [ ] Increment reduction count
-- [ ] Build property timeline component
-  - [ ] Visual timeline UI
-  - [ ] Price changes with dates
-  - [ ] Status changes with dates
-  - [ ] Days between events
-- [ ] Display timeline on property detail page
+## 📋 Todo (Upcoming Phases)
 
 ### Phase 6: Motivation Scoring
 - [ ] Implement motivation scoring algorithm
@@ -388,25 +390,31 @@ offmarkethunter/
 **Phase 2 (Watchlists):** 100% Complete ✅
 **Phase 3 (Python Integration):** 100% Complete ✅
 **Phase 4 (Property Storage & Display):** 100% Complete ✅
-**Phase 5-12:** 0% Complete
-**Overall Project:** ~33% Complete
+**Phase 5 (Historical Tracking):** 100% Complete ✅
+**Phase 6-12:** 0% Complete
+**Overall Project:** ~42% Complete
 
 ## 🎯 Current Focus
 
-Phase 4 is complete - property storage and display working! 🎉
+Phase 5 is complete - historical tracking working! 🎉
 
 **What's Working Now:**
 1. Properties are automatically saved to database after scraping
 2. Properties page displays all saved properties in a grid
 3. Comprehensive filtering by watchlist, status, price, beds, baths
-4. Sorting by date, price, and motivation score (Phase 6)
+4. Sorting by date, price, and motivation score
 5. Full property detail pages with photos, contact info, and map links
+6. **NEW:** Automatic detection of status changes (e.g., active → off_market)
+7. **NEW:** Automatic detection of price reductions with amounts and percentages
+8. **NEW:** Visual timeline showing all property history events
+9. **NEW:** Price reduction statistics tracked (count, total amount, percent)
 
-**Next up - Phase 5: Historical Tracking**
-1. Implement property_history table logic
-2. Create status change detection (active → off-market)
-3. Create price reduction detection
-4. Build property timeline component to visualize changes
+**Next up - Phase 6: Motivation Scoring**
+1. Implement motivation scoring algorithm (0-100 scale)
+2. Calculate scores based on DOM, price reductions, off-market duration, status changes
+3. Create Python endpoint for scoring logic
+4. Display motivation score badges on property cards
+5. Build score breakdown visualization on detail pages
 
 ## 🔗 Dependencies Between Phases
 

@@ -56,6 +56,9 @@ class handler(BaseHTTPRequestHandler):
                     "count": 0
                 }
             else:
+                # Replace NaN with None for JSON serialization
+                df = df.where(df.notna(), None)
+
                 # Convert DataFrame to list of dictionaries
                 props_list = df.to_dict('records')
 

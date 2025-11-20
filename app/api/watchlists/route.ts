@@ -45,7 +45,7 @@ export async function GET(request: Request) {
       ORDER BY w.created_at DESC
     `;
 
-    return NextResponse.json({ watchlists: result.rows });
+    return NextResponse.json({ success: true, watchlists: result.rows });
   } catch (error) {
     console.error('Error fetching watchlists:', error);
     return NextResponse.json(

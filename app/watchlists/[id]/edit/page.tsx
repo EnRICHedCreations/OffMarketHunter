@@ -63,10 +63,15 @@ export default function EditWatchlistPage() {
 
   useEffect(() => {
     const fetchWatchlist = async () => {
+      if (!params.id) {
+        return;
+      }
+
       try {
         const response = await fetch(`/api/watchlists/${params.id}`);
         if (!response.ok) {
           setError('Failed to load watchlist');
+          setFetchingData(false);
           return;
         }
 
@@ -100,6 +105,7 @@ export default function EditWatchlistPage() {
 
         setFetchingData(false);
       } catch (err) {
+        console.error('Error fetching watchlist:', err);
         setError('Failed to load watchlist');
         setFetchingData(false);
       }

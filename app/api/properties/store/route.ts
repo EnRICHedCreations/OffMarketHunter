@@ -177,7 +177,7 @@ export async function POST(request: Request) {
               ${prop.property_type},
               ${prop.current_status},
               ${prop.current_list_price},
-              ${prop.list_date ? new Date(prop.list_date) : null},
+              ${prop.list_date || null},
               ${prop.current_list_price},
               ${prop.agent_name},
               ${prop.agent_email},

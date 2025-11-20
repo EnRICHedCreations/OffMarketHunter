@@ -89,16 +89,42 @@ async function calculateMotivationScore(
 
 export async function POST(request: Request) {
   try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    // Check authentication (either user session OR cron secret)
+    const authHeader = request.headers.get('authorization');
+    const cronSecret = process.env.CRON_SECRET;
+    const isCronRequest = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+    let userId: number | null = null;
+
+    if (isCronRequest) {
+      // Cron job request - we'll get user_id from watchlist
+      const body = await request.json();
+      const { watchlist_id } = body;
+
+      const watchlistResult = await sql`
+        SELECT user_id FROM watchlists WHERE id = ${watchlist_id}
+      `;
+
+      if (watchlistResult.rows.length === 0) {
+        return NextResponse.json(
+          { error: 'Watchlist not found' },
+          { status: 404 }
+        );
+      }
+
+      userId = watchlistResult.rows[0].user_id;
+    } else {
+      // Regular user request
+      const session = await auth();
+      if (!session?.user?.id) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+      userId = parseInt(session.user.id);
     }
 
-    const userId = parseInt(session.user.id);
     const body = await request.json();
     const { watchlist_id } = body;
 

@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/hourly-status-check",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/daily-off-market-scan",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}

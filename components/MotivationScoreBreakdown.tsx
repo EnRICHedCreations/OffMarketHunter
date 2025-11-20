@@ -17,13 +17,22 @@ export default function MotivationScoreBreakdown({
   statusComponent,
   marketComponent,
 }: MotivationScoreBreakdownProps) {
-  // Ensure all values are numbers with defaults
-  const total = totalScore ?? 0;
-  const dom = domComponent ?? 0;
-  const reduction = reductionComponent ?? 0;
-  const offMarket = offMarketComponent ?? 0;
-  const status = statusComponent ?? 0;
-  const market = marketComponent ?? 0;
+  // Ensure all values are valid numbers with defaults
+  const safeNumber = (val: any): number => {
+    if (typeof val === 'number' && !isNaN(val)) return val;
+    if (typeof val === 'string') {
+      const parsed = parseFloat(val);
+      return !isNaN(parsed) ? parsed : 0;
+    }
+    return 0;
+  };
+
+  const total = safeNumber(totalScore);
+  const dom = safeNumber(domComponent);
+  const reduction = safeNumber(reductionComponent);
+  const offMarket = safeNumber(offMarketComponent);
+  const status = safeNumber(statusComponent);
+  const market = safeNumber(marketComponent);
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-red-600';
     if (score >= 80) return 'text-orange-600';
@@ -42,8 +51,8 @@ export default function MotivationScoreBreakdown({
 
   const ScoreBar = ({ label, score, maxScore, description }: { label: string; score: number; maxScore: number; description: string }) => {
     // Extra safety: ensure score is a number
-    const safeScore = typeof score === 'number' ? score : 0;
-    const percentage = (safeScore / maxScore) * 100;
+    const safeScore = typeof score === 'number' && !isNaN(score) ? score : 0;
+    const percentage = Math.min(100, Math.max(0, (safeScore / maxScore) * 100));
 
     return (
       <div className="mb-4">

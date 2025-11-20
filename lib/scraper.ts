@@ -50,6 +50,19 @@ interface ScrapedProperty {
   raw_data: any;
 }
 
+// Detect available Python command
+function getPythonCommand(): string {
+  const platform = process.platform;
+
+  // On Windows, try these commands in order
+  if (platform === 'win32') {
+    return 'py'; // Python Launcher for Windows (most reliable)
+  }
+
+  // On Unix-like systems, prefer python3
+  return 'python3';
+}
+
 async function callPythonScraper(
   scrapeType: 'off_market' | 'active',
   criteria: WatchlistCriteria,
@@ -57,6 +70,7 @@ async function callPythonScraper(
 ): Promise<ScrapedProperty[]> {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(process.cwd(), 'scripts', 'scrape_properties.py');
+    const pythonCmd = getPythonCommand();
 
     // Prepare input data
     const inputData = {
@@ -80,8 +94,10 @@ async function callPythonScraper(
       updated_hours: updatedHours,
     };
 
+    console.log(`Using Python command: ${pythonCmd}`);
+
     // Spawn Python process
-    const python = spawn('python', [scriptPath]);
+    const python = spawn(pythonCmd, [scriptPath]);
 
     let stdout = '';
     let stderr = '';

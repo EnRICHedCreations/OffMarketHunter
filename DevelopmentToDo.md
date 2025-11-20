@@ -115,44 +115,49 @@
 - Use `math.isnan()` to handle NaN values before JSON serialization
 - Frontend can call Python APIs directly, no need for Next.js wrapper routes
 
-## 📋 Todo (Upcoming Phases)
+### Phase 4: Property Storage & Display (Complete)
+- [x] Create property storage API endpoint (`/api/properties/store`)
+  - [x] Accept scraped properties from frontend
+  - [x] Save to database with user_id and watchlist_id
+  - [x] Handle duplicates (UPDATE if exists, INSERT if new)
+  - [x] Store raw_data as JSONB
+  - [x] Return storage statistics (new/updated counts)
+- [x] Update WatchlistCard to save scraped properties
+  - [x] Call storage API after successful scrape
+  - [x] Display save statistics in success message
+- [x] Build property card component (`components/PropertyCard.tsx`)
+  - [x] Property photo with fallback
+  - [x] Address and basic info (beds, baths, sqft, price)
+  - [x] Motivation score badge (placeholder for now)
+  - [x] "View Details" button
+  - [x] Days on market indicator
+- [x] Create property list page (`app/properties/page.tsx`)
+  - [x] Fetch properties from database via API
+  - [x] Display in grid layout with client-side state management
+  - [x] Empty state for no properties
+  - [x] Property count display
+  - [x] Loading states
+- [x] Add property filtering UI
+  - [x] Filter by watchlist dropdown
+  - [x] Filter by status (off-market, for-sale, pending, etc.)
+  - [x] Price range inputs (min/max)
+  - [x] Beds/baths min selectors
+  - [x] Reset filters functionality
+- [x] Add property sorting
+  - [x] Sort by date added (newest first)
+  - [x] Sort by price (high/low)
+  - [x] Sort by motivation score (placeholder for Phase 6)
+  - [x] Sort order toggle (ASC/DESC)
+- [x] Implement property detail page (`app/properties/[id]/page.tsx`)
+  - [x] Full property information with all fields
+  - [x] Photo gallery (displays up to 6 photos)
+  - [x] Agent contact info with click-to-call/email
+  - [x] Property history timeline (placeholder for Phase 5)
+  - [x] Map integration (Google Maps link)
+  - [x] Additional details (MLS ID, last sold info, etc.)
+  - [x] User ownership verification
 
-### Phase 4: Property Storage & Display
-- [ ] Create property storage API endpoint (`/api/properties/store`)
-  - [ ] Accept scraped properties from frontend
-  - [ ] Save to database with user_id and watchlist_id
-  - [ ] Handle duplicates (UPDATE if exists, INSERT if new)
-  - [ ] Store raw_data as JSONB
-  - [ ] Return storage statistics (new/updated counts)
-- [ ] Update WatchlistCard to save scraped properties
-  - [ ] Call storage API after successful scrape
-  - [ ] Display save statistics in success message
-- [ ] Build property card component (`components/PropertyCard.tsx`)
-  - [ ] Property photo with fallback
-  - [ ] Address and basic info (beds, baths, sqft, price)
-  - [ ] Motivation score badge (placeholder for now)
-  - [ ] "View Details" button
-  - [ ] Days on market indicator
-- [ ] Create property list page (`app/properties/page.tsx`)
-  - [ ] Fetch properties from database
-  - [ ] Display in grid layout
-  - [ ] Empty state for no properties
-  - [ ] Property count display
-- [ ] Add property filtering UI
-  - [ ] Filter by watchlist dropdown
-  - [ ] Filter by status (off-market, for-sale, pending, etc.)
-  - [ ] Price range slider
-  - [ ] Beds/baths min selectors
-- [ ] Add property sorting
-  - [ ] Sort by date added (newest first)
-  - [ ] Sort by price (high/low)
-  - [ ] Sort by days on market
-- [ ] Implement property detail page (`app/properties/[id]/page.tsx`)
-  - [ ] Full property information
-  - [ ] Photo gallery
-  - [ ] Agent contact info with click-to-call/email
-  - [ ] Property history timeline
-  - [ ] Map integration (Google Maps or Mapbox)
+## 📋 Todo (Upcoming Phases)
 
 ### Phase 5: Historical Tracking
 - [ ] Implement property_history table logic
@@ -382,19 +387,26 @@ offmarkethunter/
 **Phase 1 (Foundation):** 100% Complete ✅
 **Phase 2 (Watchlists):** 100% Complete ✅
 **Phase 3 (Python Integration):** 100% Complete ✅
-**Phase 4 (Property Storage):** 0% Complete
+**Phase 4 (Property Storage & Display):** 100% Complete ✅
 **Phase 5-12:** 0% Complete
-**Overall Project:** ~25% Complete
+**Overall Project:** ~33% Complete
 
 ## 🎯 Current Focus
 
-Phase 3 is complete - scraping works! 🎉
+Phase 4 is complete - property storage and display working! 🎉
 
-**Next up - Phase 4: Property Storage & Display**
-1. Create backend to store scraped properties in database
-2. Build property card and list UI components
-3. Display properties on dashboard
-4. Add filtering and sorting capabilities
+**What's Working Now:**
+1. Properties are automatically saved to database after scraping
+2. Properties page displays all saved properties in a grid
+3. Comprehensive filtering by watchlist, status, price, beds, baths
+4. Sorting by date, price, and motivation score (Phase 6)
+5. Full property detail pages with photos, contact info, and map links
+
+**Next up - Phase 5: Historical Tracking**
+1. Implement property_history table logic
+2. Create status change detection (active → off-market)
+3. Create price reduction detection
+4. Build property timeline component to visualize changes
 
 ## 🔗 Dependencies Between Phases
 

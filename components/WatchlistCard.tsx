@@ -66,8 +66,8 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
     setIsScanning(true);
     setScanMessage(null);
     try {
-      // Call Python API directly
-      const response = await fetch(`/api/scrape`, {
+      // Step 1: Call Python API to scrape properties
+      const scrapeResponse = await fetch(`/api/scrape`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,17 +84,47 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
         }),
       });
 
-      const result = await response.json();
+      const scrapeResult = await scrapeResponse.json();
 
-      if (response.ok && result.success) {
-        setScanMessage(`Found ${result.count} properties`);
-        setTimeout(() => {
-          router.refresh();
-          setScanMessage(null);
-        }, 3000);
-      } else {
-        setScanMessage(result.error || 'Failed to scan');
+      if (!scrapeResponse.ok || !scrapeResult.success) {
+        setScanMessage(scrapeResult.error || 'Failed to scan');
+        return;
       }
+
+      // Step 2: Save scraped properties to database
+      if (scrapeResult.properties && scrapeResult.properties.length > 0) {
+        const storeResponse = await fetch('/api/properties/store', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            watchlist_id: watchlist.id,
+            properties: scrapeResult.properties,
+          }),
+        });
+
+        const storeResult = await storeResponse.json();
+
+        if (storeResponse.ok && storeResult.success) {
+          setScanMessage(
+            `Saved ${storeResult.new_count} new, updated ${storeResult.updated_count} existing properties`
+          );
+        } else {
+          setScanMessage(
+            `Found ${scrapeResult.count} properties but failed to save: ${storeResult.error}`
+          );
+        }
+      } else {
+        setScanMessage('No properties found');
+      }
+
+      // Refresh after 3 seconds
+      setTimeout(() => {
+        router.refresh();
+        setScanMessage(null);
+      }, 3000);
+
     } catch (error) {
       console.error('Error scanning watchlist:', error);
       setScanMessage('Failed to scan properties');

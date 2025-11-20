@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { handleSignOut } from '@/app/actions/auth';
 
 interface HeaderProps {
   user: {
@@ -34,8 +34,8 @@ export default function Header({ user }: HeaderProps) {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
+  const onSignOut = async () => {
+    await handleSignOut();
   };
 
   return (
@@ -92,7 +92,7 @@ export default function Header({ user }: HeaderProps) {
                 <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
                   <div className="py-1">
                     <button
-                      onClick={handleSignOut}
+                      onClick={onSignOut}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Sign out

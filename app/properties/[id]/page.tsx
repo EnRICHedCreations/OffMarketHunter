@@ -4,6 +4,7 @@ import { sql } from '@vercel/postgres';
 import Image from 'next/image';
 import Link from 'next/link';
 import PropertyTimeline from '@/components/PropertyTimeline';
+import MotivationScoreBreakdown from '@/components/MotivationScoreBreakdown';
 
 interface Property {
   id: number;
@@ -34,6 +35,11 @@ interface Property {
   photos?: any;
   description_text?: string | null;
   motivation_score?: number | null;
+  motivation_score_dom?: number | null;
+  motivation_score_reductions?: number | null;
+  motivation_score_off_market?: number | null;
+  motivation_score_status?: number | null;
+  motivation_score_market?: number | null;
   raw_data?: any;
   watchlist_name?: string;
 }
@@ -338,22 +344,25 @@ export default async function PropertyDetailPage({
               </div>
             )}
 
-            {/* Motivation Score - Placeholder for Phase 6 */}
-            {property.motivation_score ? (
+            {/* Motivation Score */}
+            {property.motivation_score && property.motivation_score_dom && property.motivation_score_reductions && property.motivation_score_off_market && property.motivation_score_status && property.motivation_score_market ? (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Motivation Score</h2>
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-indigo-600 mb-2">
-                    {property.motivation_score}
-                  </div>
-                  <div className="text-sm text-gray-500">out of 100</div>
-                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Motivation Analysis</h2>
+                <MotivationScoreBreakdown
+                  totalScore={property.motivation_score}
+                  domComponent={property.motivation_score_dom}
+                  reductionComponent={property.motivation_score_reductions}
+                  offMarketComponent={property.motivation_score_off_market}
+                  statusComponent={property.motivation_score_status}
+                  marketComponent={property.motivation_score_market}
+                />
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Motivation Score</h2>
                 <div className="text-center py-4 text-gray-500">
-                  <p>Scoring coming in Phase 6</p>
+                  <p>Score not calculated yet</p>
+                  <p className="text-xs mt-2">Scores will be calculated automatically when properties are scanned</p>
                 </div>
               </div>
             )}

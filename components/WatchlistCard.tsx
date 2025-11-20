@@ -242,6 +242,13 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
                 {isActive ? 'Pause' : 'Activate'}
               </button>
 
+              <Link
+                href={`/watchlists/${watchlist.id}/edit`}
+                className="px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200 transition"
+              >
+                Edit
+              </Link>
+
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 className="px-3 py-1 text-sm font-medium text-red-700 bg-red-100 rounded-md hover:bg-red-200 transition"

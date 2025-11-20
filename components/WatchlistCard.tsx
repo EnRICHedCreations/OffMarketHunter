@@ -26,6 +26,8 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
   const [isActive, setIsActive] = useState(watchlist.is_active);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState<string | null>(null);
 
   const handleToggleActive = async () => {
     try {
@@ -57,6 +59,33 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
     } catch (error) {
       console.error('Error deleting watchlist:', error);
       setIsDeleting(false);
+    }
+  };
+
+  const handleScanNow = async () => {
+    setIsScanning(true);
+    setScanMessage(null);
+    try {
+      const response = await fetch(`/api/watchlists/${watchlist.id}/scrape`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setScanMessage(result.message);
+        setTimeout(() => {
+          router.refresh();
+          setScanMessage(null);
+        }, 3000);
+      } else {
+        setScanMessage(result.error || 'Failed to scan');
+      }
+    } catch (error) {
+      console.error('Error scanning watchlist:', error);
+      setScanMessage('Failed to scan properties');
+    } finally {
+      setIsScanning(false);
     }
   };
 
@@ -133,9 +162,28 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              <span className="font-semibold text-gray-900">{watchlist.property_count || 0}</span> properties
+          {scanMessage && (
+            <div className={`mt-4 px-3 py-2 rounded text-sm ${
+              scanMessage.includes('Failed') || scanMessage.includes('error')
+                ? 'bg-red-50 text-red-700'
+                : 'bg-green-50 text-green-700'
+            }`}>
+              {scanMessage}
+            </div>
+          )}
+
+          <div className="pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm text-gray-500">
+                <span className="font-semibold text-gray-900">{watchlist.property_count || 0}</span> properties
+              </div>
+              <button
+                onClick={handleScanNow}
+                disabled={isScanning || !isActive}
+                className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isScanning ? 'Scanning...' : 'Scan Now'}
+              </button>
             </div>
 
             <div className="flex items-center gap-2">

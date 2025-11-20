@@ -109,7 +109,7 @@ async function callPythonScraper(
 export async function scrapeOffMarketProperties(
   criteria: WatchlistCriteria
 ): Promise<ScrapedProperty[]> {
-  console.log('Scraping off-market properties for:', criteria.location);
+  console.log('[v2] Scraping off-market properties for:', criteria.location);
 
   try {
     const properties = await callPythonScraper('off_market', criteria);

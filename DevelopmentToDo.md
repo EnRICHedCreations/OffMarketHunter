@@ -206,25 +206,42 @@
 - Manual scoring via button click works better than auto-scoring during property save
 - TypeScript implementation of scoring algorithm avoids Python HTTP call issues
 
-## 📋 Todo (Upcoming Phases)
+### Phase 7: Cron Jobs (Complete)
+- [x] Create `/api/cron/hourly-status-check` endpoint
+  - [x] Get all active watchlists (up to 10 per run)
+  - [x] Scrape for-sale listings for updates
+  - [x] Detect status changes (active → off-market)
+  - [x] Detect price reductions
+  - [x] Update database via store endpoint
+  - [x] Property_history entries created automatically
+  - [x] Update last_scraped_at timestamp
+- [x] Create `/api/cron/daily-off-market-scan` endpoint
+  - [x] Full off-market AND for-sale property scan
+  - [x] Store new properties
+  - [x] Update existing properties
+  - [x] Auto-calculate motivation scores for all properties
+  - [x] Process all active watchlists
+- [x] Set up Vercel Cron jobs
+  - [x] Hourly: `0 * * * *` for status checks
+  - [x] Daily: `0 2 * * *` for off-market scan
+  - [x] Created vercel.json configuration
+- [x] Add cron authentication with CRON_SECRET
+  - [x] Updated store endpoint for cron auth
+  - [x] Updated score endpoint for cron auth
+  - [x] Bearer token authentication
+- [x] Test cron execution
+  - [x] Created CRON_SETUP.md guide
+  - [x] Local and production testing instructions
+  - [x] Monitoring and troubleshooting guidelines
 
-### Phase 7: Cron Jobs
-- [ ] Create `/api/cron/hourly-status-check` endpoint
-  - [ ] Get all active watchlists
-  - [ ] Scrape recent updates
-  - [ ] Detect status changes (active → off-market)
-  - [ ] Detect price reductions
-  - [ ] Update database
-  - [ ] Create property_history entries
-- [ ] Create `/api/cron/daily-off-market-scan` endpoint
-  - [ ] Full off-market property scan
-  - [ ] Store new properties
-  - [ ] Calculate motivation scores
-- [ ] Set up Vercel Cron jobs
-  - [ ] Hourly: `0 * * * *` for status checks
-  - [ ] Daily: `0 2 * * *` for off-market scan
-- [ ] Add cron authentication with CRON_SECRET
-- [ ] Test cron execution
+**Key Lessons Learned:**
+- Vercel cron jobs require Bearer token authentication via CRON_SECRET
+- Cron endpoints must support dual authentication (user session OR cron secret)
+- Rate limiting important: process watchlists in batches to avoid timeouts
+- maxDuration set to 300s (5 minutes) for long-running scrapes
+- Oldest watchlists processed first (ORDER BY last_scraped_at ASC)
+
+## 📋 Todo (Upcoming Phases)
 
 ### Phase 8: Alert System
 - [ ] Create alert generation logic
@@ -329,6 +346,9 @@ offmarkethunter/
 │   │   ├── auth/
 │   │   │   ├── [...nextauth]/route.ts
 │   │   │   └── signup/route.ts
+│   │   ├── cron/
+│   │   │   ├── hourly-status-check/route.ts (GET)
+│   │   │   └── daily-off-market-scan/route.ts (GET)
 │   │   ├── properties/
 │   │   │   ├── history/route.ts (GET)
 │   │   │   ├── route.ts (GET - list properties)
@@ -362,6 +382,8 @@ offmarkethunter/
 │   └── db/schema.sql
 ├── .env.example
 ├── .gitignore
+├── CRON_SETUP.md
+├── vercel.json
 ├── auth.config.ts
 ├── auth.ts
 ├── developmentplan.md
@@ -375,24 +397,29 @@ offmarkethunter/
 └── tsconfig.json
 ```
 
-## 🚀 Next Immediate Steps - Phase 7: Cron Jobs
+## 🚀 Next Immediate Steps - Phase 8: Alert System
 
-1. **Create Hourly Status Check Cron**
-   - Build `/api/cron/hourly-status-check` endpoint
-   - Get all active watchlists
-   - Scrape for property updates
-   - Detect status and price changes
-   - Update property_history table
+1. **Create Alert Generation Logic**
+   - Check motivation score vs user threshold
+   - Create alert records in database
+   - Determine alert type (new property, price drop, high motivation)
 
-2. **Create Daily Off-Market Scan Cron**
-   - Build `/api/cron/daily-off-market-scan` endpoint
-   - Scan all active watchlists for new off-market properties
-   - Auto-calculate motivation scores
+2. **Build Alerts Page UI**
+   - List view of all alerts
+   - Unread highlighting
+   - Filter by type and read status
+   - Mark as read functionality
 
-3. **Configure Vercel Cron Jobs**
-   - Add vercel.json with cron configuration
-   - Set up CRON_SECRET environment variable
-   - Test cron execution
+3. **Implement Alert API Endpoints**
+   - GET /api/alerts - Get user's alerts
+   - PUT /api/alerts/[id]/read - Mark as read
+   - DELETE /api/alerts/[id] - Dismiss alert
+   - PUT /api/alerts/read-all - Mark all as read
+
+4. **Add Alert Badge to Header**
+   - Show unread count
+   - Real-time updates
+   - Link to alerts page
 
 ## 📊 Overall Progress
 
@@ -402,12 +429,13 @@ offmarkethunter/
 **Phase 4 (Property Storage & Display):** 100% Complete ✅
 **Phase 5 (Historical Tracking):** 100% Complete ✅
 **Phase 6 (Motivation Scoring):** 100% Complete ✅
-**Phase 7-12:** 0% Complete
-**Overall Project:** ~50% Complete
+**Phase 7 (Cron Jobs):** 100% Complete ✅
+**Phase 8-12:** 0% Complete
+**Overall Project:** ~58% Complete
 
 ## 🎯 Current Focus
 
-Phase 6 is complete - motivation scoring fully functional! 🎉
+Phase 7 is complete - automated cron jobs working! 🎉
 
 **What's Working Now:**
 1. Properties are automatically saved to database after scraping
@@ -430,13 +458,20 @@ Phase 6 is complete - motivation scoring fully functional! 🎉
 13. Manual "Score" button on watchlist cards
 14. Color-coded score badges on property cards
 15. Detailed score breakdown visualization with gauges and progress bars
+16. **Automated Cron Jobs:**
+    - Hourly status checks (every hour)
+    - Daily off-market scans (2 AM daily)
+    - Auto-scoring after property updates
+    - Automatic history tracking
+17. Hands-free property monitoring
+18. No more manual "Scan Now" clicks required
 
-**Next up - Phase 7: Cron Jobs**
-1. Create automated hourly status checks
-2. Implement daily off-market scans
-3. Set up Vercel Cron job configuration
-4. Add CRON_SECRET authentication
-5. Automate scoring after property updates
+**Next up - Phase 8: Alert System**
+1. Create alert generation logic based on motivation scores
+2. Build alerts page UI
+3. Implement alert API endpoints
+4. Add unread alert badge to header
+5. Notify users of high-motivation properties automatically
 
 ## 🔗 Dependencies Between Phases
 

@@ -1,7 +1,14 @@
 from http.server import BaseHTTPRequestHandler
 import json
+import math
 from homeharvest import scrape_property
 import traceback
+
+def clean_value(val):
+    """Convert NaN and other invalid JSON values to None"""
+    if isinstance(val, float) and (math.isnan(val) or math.isinf(val)):
+        return None
+    return val
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -56,9 +63,6 @@ class handler(BaseHTTPRequestHandler):
                     "count": 0
                 }
             else:
-                # Replace NaN with None for JSON serialization
-                df = df.where(df.notna(), None)
-
                 # Convert DataFrame to list of dictionaries
                 props_list = df.to_dict('records')
 
@@ -67,42 +71,42 @@ class handler(BaseHTTPRequestHandler):
                 for prop in props_list:
                     properties.append({
                         'property_id': str(prop.get('property_id', '')),
-                        'full_street_line': prop.get('street', ''),
-                        'city': prop.get('city', ''),
-                        'state': prop.get('state', ''),
-                        'zip_code': str(prop.get('zip_code', '')),
-                        'county': prop.get('county'),
-                        'latitude': prop.get('latitude'),
-                        'longitude': prop.get('longitude'),
-                        'beds': prop.get('beds'),
-                        'baths': prop.get('baths'),
-                        'sqft': prop.get('sqft'),
-                        'lot_sqft': prop.get('lot_sqft'),
-                        'year_built': prop.get('year_built'),
-                        'property_type': prop.get('property_type'),
-                        'current_status': prop.get('status', 'off_market'),
-                        'current_list_price': prop.get('list_price'),
-                        'list_date': prop.get('list_date'),
-                        'agent_name': prop.get('agent_name'),
-                        'agent_email': prop.get('agent_email'),
-                        'agent_phone': prop.get('agent_phone'),
-                        'broker_name': prop.get('broker_name'),
-                        'mls_id': prop.get('mls_id'),
-                        'primary_photo': prop.get('primary_photo'),
-                        'photos': prop.get('photos', []),
-                        'description': prop.get('description'),
+                        'full_street_line': clean_value(prop.get('street')) or '',
+                        'city': clean_value(prop.get('city')) or '',
+                        'state': clean_value(prop.get('state')) or '',
+                        'zip_code': str(clean_value(prop.get('zip_code')) or ''),
+                        'county': clean_value(prop.get('county')),
+                        'latitude': clean_value(prop.get('latitude')),
+                        'longitude': clean_value(prop.get('longitude')),
+                        'beds': clean_value(prop.get('beds')),
+                        'baths': clean_value(prop.get('baths')),
+                        'sqft': clean_value(prop.get('sqft')),
+                        'lot_sqft': clean_value(prop.get('lot_sqft')),
+                        'year_built': clean_value(prop.get('year_built')),
+                        'property_type': clean_value(prop.get('property_type')),
+                        'current_status': clean_value(prop.get('status')) or 'off_market',
+                        'current_list_price': clean_value(prop.get('list_price')),
+                        'list_date': clean_value(prop.get('list_date')),
+                        'agent_name': clean_value(prop.get('agent_name')),
+                        'agent_email': clean_value(prop.get('agent_email')),
+                        'agent_phone': clean_value(prop.get('agent_phone')),
+                        'broker_name': clean_value(prop.get('broker_name')),
+                        'mls_id': clean_value(prop.get('mls_id')),
+                        'primary_photo': clean_value(prop.get('primary_photo')),
+                        'photos': prop.get('photos', []) if not isinstance(prop.get('photos'), float) else [],
+                        'description': clean_value(prop.get('description')),
                         'raw_data': {
-                            'original_list_price': prop.get('original_list_price'),
-                            'days_on_market': prop.get('days_on_mls'),
-                            'price_reduction_count': prop.get('price_reduction_count'),
-                            'off_market_date': prop.get('off_market_date'),
-                            'last_sold_date': prop.get('last_sold_date'),
-                            'last_sold_price': prop.get('last_sold_price'),
-                            'hoa_fee': prop.get('hoa_fee'),
-                            'stories': prop.get('stories'),
-                            'garage': prop.get('garage'),
-                            'pool': prop.get('pool'),
-                            'style': prop.get('style'),
+                            'original_list_price': clean_value(prop.get('original_list_price')),
+                            'days_on_market': clean_value(prop.get('days_on_mls')),
+                            'price_reduction_count': clean_value(prop.get('price_reduction_count')),
+                            'off_market_date': clean_value(prop.get('off_market_date')),
+                            'last_sold_date': clean_value(prop.get('last_sold_date')),
+                            'last_sold_price': clean_value(prop.get('last_sold_price')),
+                            'hoa_fee': clean_value(prop.get('hoa_fee')),
+                            'stories': clean_value(prop.get('stories')),
+                            'garage': clean_value(prop.get('garage')),
+                            'pool': clean_value(prop.get('pool')),
+                            'style': clean_value(prop.get('style')),
                         }
                     })
 

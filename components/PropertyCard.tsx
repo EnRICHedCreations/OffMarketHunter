@@ -91,11 +91,16 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           </span>
         </div>
 
-        {/* Motivation Score Badge (placeholder for Phase 6) */}
-        {property.motivation_score && (
+        {/* Motivation Score Badge */}
+        {property.motivation_score != null && (
           <div className="absolute top-2 right-2">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${getMotivationBadgeColor(property.motivation_score)}`}>
-              Score: {typeof property.motivation_score === 'number' ? Math.round(property.motivation_score) : parseFloat(property.motivation_score as any).toFixed(0)}
+              Score: {(() => {
+                const score = typeof property.motivation_score === 'string'
+                  ? parseFloat(property.motivation_score)
+                  : property.motivation_score;
+                return !isNaN(score as number) ? Math.round(score as number) : 0;
+              })()}
             </span>
           </div>
         )}

@@ -349,9 +349,56 @@ export async function POST(request: Request) {
       WHERE id = ${watchlist_id}
     `;
 
-    // Auto-calculate motivation scores for properties in this watchlist
-    // NOTE: Scoring disabled to avoid Vercel auth issues. Will implement via cron job.
-    // TODO: Move scoring to a separate cron job that runs periodically
+    // Generate alerts for high-motivation properties
+    try {
+      // Get watchlist alert threshold
+      const watchlistInfo = await sql`
+        SELECT alert_threshold FROM watchlists WHERE id = ${watchlist_id}
+      `;
+
+      const alertThreshold = watchlistInfo.rows[0]?.alert_threshold || 70;
+
+      // Find new properties with high motivation scores
+      const highMotivationProps = await sql`
+        SELECT p.id, p.property_id, p.motivation_score, p.full_street_line, p.city, p.state
+        FROM properties p
+        WHERE p.watchlist_id = ${watchlist_id}
+          AND p.motivation_score >= ${alertThreshold}
+          AND p.motivation_score IS NOT NULL
+          AND p.created_at >= NOW() - INTERVAL '1 hour'
+          AND NOT EXISTS (
+            SELECT 1 FROM alerts a
+            WHERE a.property_id = p.id
+            AND a.alert_type = 'high_motivation'
+          )
+      `;
+
+      // Create alerts for each high-motivation property
+      for (const prop of highMotivationProps.rows) {
+        await sql`
+          INSERT INTO alerts (
+            user_id,
+            property_id,
+            watchlist_id,
+            alert_type,
+            alert_reason,
+            motivation_score
+          ) VALUES (
+            ${userId},
+            ${prop.id},
+            ${watchlist_id},
+            'high_motivation',
+            ${`High motivation score (${prop.motivation_score}) detected for property at ${prop.full_street_line}, ${prop.city}, ${prop.state}`},
+            ${prop.motivation_score}
+          )
+        `;
+      }
+
+      console.log(`[ALERTS] Created ${highMotivationProps.rows.length} alerts for watchlist ${watchlist_id}`);
+    } catch (alertError) {
+      console.error('[ALERTS] Error generating alerts:', alertError);
+      // Don't fail the whole operation if alert generation fails
+    }
 
     return NextResponse.json({
       success: true,

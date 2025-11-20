@@ -81,11 +81,8 @@ export async function GET(request: Request) {
         };
 
         // Scrape for updated property data (for-sale listings only for status checks)
-        const baseUrl = process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}`
-          : 'http://localhost:3000';
-
-        const scrapeResponse = await fetch(`${baseUrl}/api/scrape`, {
+        // Use internal localhost to bypass Vercel deployment protection
+        const scrapeResponse = await fetch(`http://localhost:3000/api/scrape`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -104,7 +101,7 @@ export async function GET(request: Request) {
 
         if (scrapeResult.success && scrapeResult.properties?.length > 0) {
           // Store updated properties (this will detect changes automatically)
-          const storeResponse = await fetch(`${baseUrl}/api/properties/store`, {
+          const storeResponse = await fetch(`http://localhost:3000/api/properties/store`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

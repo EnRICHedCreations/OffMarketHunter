@@ -76,9 +76,10 @@ async function callPythonScraper(
 
   try {
     // Call Python API endpoint
-    const apiUrl = process.env.VERCEL
-      ? '/api/scrape' // On Vercel, use the Python function
-      : 'http://localhost:3000/api/scrape'; // Local development
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000';
+    const apiUrl = `${baseUrl}/api/scrape`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',

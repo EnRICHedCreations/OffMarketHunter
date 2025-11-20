@@ -68,9 +68,9 @@
 - [x] Implement watchlist CRUD API endpoints
   - [x] `GET /api/watchlists` - List user's watchlists with property counts
   - [x] `POST /api/watchlists` - Create watchlist
-  - [x] `GET /api/watchlists/[id]` - Get single watchlist
-  - [x] `PUT /api/watchlists/[id]` - Update watchlist
-  - [x] `DELETE /api/watchlists/[id]` - Delete watchlist (cascades to properties)
+  - [x] `GET /api/watchlists/by-id?id=X` - Get single watchlist (query param workaround)
+  - [x] `PUT /api/watchlists/by-id?id=X` - Update watchlist (query param workaround)
+  - [x] `DELETE /api/watchlists/by-id?id=X` - Delete watchlist (query param workaround)
 - [x] Add watchlist list view with cards (`components/WatchlistCard.tsx`)
   - [x] Display location, price range, bed range
   - [x] Show monitoring options as badges
@@ -173,7 +173,7 @@
   - [x] Status changes with dates
   - [x] Loading and empty states
 - [x] Display timeline on property detail page
-- [x] Create GET /api/properties/[id]/history endpoint
+- [x] Create GET /api/properties/history?id=X endpoint (query param workaround)
 
 ## 📋 Todo (Upcoming Phases)
 
@@ -404,10 +404,11 @@ Phase 5 is complete - historical tracking working! 🎉
 3. Comprehensive filtering by watchlist, status, price, beds, baths
 4. Sorting by date, price, and motivation score
 5. Full property detail pages with photos, contact info, and map links
-6. **NEW:** Automatic detection of status changes (e.g., active → off_market)
-7. **NEW:** Automatic detection of price reductions with amounts and percentages
-8. **NEW:** Visual timeline showing all property history events
-9. **NEW:** Price reduction statistics tracked (count, total amount, percent)
+6. Automatic detection of status changes (e.g., active → off_market)
+7. Automatic detection of price reductions with amounts and percentages
+8. Visual timeline showing all property history events
+9. Price reduction statistics tracked (count, total amount, percent)
+10. **FIXED:** Edit, delete, and toggle watchlist functionality now working (query param workaround)
 
 **Next up - Phase 6: Motivation Scoring**
 1. Implement motivation scoring algorithm (0-100 scale)
@@ -430,8 +431,9 @@ Phase 5 is complete - historical tracking working! 🎉
 
 ## 📝 Notes
 
-- Using Next.js 16.0.3 (Turbopack)
+- Using Next.js 15.1.3 (downgraded from 16.0.3 for Vercel compatibility)
 - Using NextAuth v5 (beta)
 - Using Tailwind CSS v3.4.1 (not v4 due to PostCSS compatibility)
 - Database schema supports all features from development plan
 - Following WholesaleOS Elite patterns for consistency
+- **API Route Workaround:** Using query parameters (`/api/resource/by-id?id=X`) instead of dynamic routes (`/api/resource/[id]`) due to Vercel deployment issues with bracket notation in Next.js 15/16

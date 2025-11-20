@@ -67,58 +67,76 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
   const handleScanNow = async () => {
     setIsScanning(true);
     setScanMessage(null);
+
+    let totalNew = 0;
+    let totalUpdated = 0;
+
     try {
-      // Step 1: Call Python API to scrape properties
-      const scrapeResponse = await fetch(`/api/scrape`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'off_market',
-          criteria: {
-            location: watchlist.location,
-            price_min: watchlist.price_min,
-            price_max: watchlist.price_max,
-            beds_min: watchlist.beds_min,
-            beds_max: watchlist.beds_max,
-          },
-        }),
-      });
+      const criteria = {
+        location: watchlist.location,
+        price_min: watchlist.price_min,
+        price_max: watchlist.price_max,
+        beds_min: watchlist.beds_min,
+        beds_max: watchlist.beds_max,
+      };
 
-      const scrapeResult = await scrapeResponse.json();
+      // Scan both off-market and active listings
+      const scanTypes = ['off_market', 'for_sale'];
 
-      if (!scrapeResponse.ok || !scrapeResult.success) {
-        setScanMessage(scrapeResult.error || 'Failed to scan');
-        return;
+      for (const scanType of scanTypes) {
+        try {
+          // Step 1: Call Python API to scrape properties
+          const scrapeResponse = await fetch(`/api/scrape`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: scanType,
+              criteria: criteria,
+            }),
+          });
+
+          const scrapeResult = await scrapeResponse.json();
+
+          if (!scrapeResponse.ok || !scrapeResult.success) {
+            console.error(`Failed to scan ${scanType}:`, scrapeResult.error);
+            continue; // Skip to next scan type
+          }
+
+          // Step 2: Save scraped properties to database
+          if (scrapeResult.properties && scrapeResult.properties.length > 0) {
+            const storeResponse = await fetch('/api/properties/store', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                watchlist_id: watchlist.id,
+                properties: scrapeResult.properties,
+              }),
+            });
+
+            const storeResult = await storeResponse.json();
+
+            if (storeResponse.ok && storeResult.success) {
+              totalNew += storeResult.new_count;
+              totalUpdated += storeResult.updated_count;
+            }
+          }
+        } catch (err) {
+          console.error(`Error scanning ${scanType}:`, err);
+          // Continue with next scan type
+        }
       }
 
-      // Step 2: Save scraped properties to database
-      if (scrapeResult.properties && scrapeResult.properties.length > 0) {
-        const storeResponse = await fetch('/api/properties/store', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            watchlist_id: watchlist.id,
-            properties: scrapeResult.properties,
-          }),
-        });
-
-        const storeResult = await storeResponse.json();
-
-        if (storeResponse.ok && storeResult.success) {
-          setScanMessage(
-            `Saved ${storeResult.new_count} new, updated ${storeResult.updated_count} existing properties`
-          );
-        } else {
-          setScanMessage(
-            `Found ${scrapeResult.count} properties but failed to save: ${storeResult.error}`
-          );
-        }
+      // Show results
+      if (totalNew > 0 || totalUpdated > 0) {
+        setScanMessage(
+          `Saved ${totalNew} new, updated ${totalUpdated} existing properties`
+        );
       } else {
-        setScanMessage('No properties found');
+        setScanMessage('No new properties found');
       }
 
       // Refresh after 3 seconds

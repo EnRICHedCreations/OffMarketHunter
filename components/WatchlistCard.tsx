@@ -31,7 +31,7 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
 
   const handleToggleActive = async () => {
     try {
-      const response = await fetch(`/api/watchlists/${watchlist.id}`, {
+      const response = await fetch(`/api/watchlists/by-id?id=${watchlist.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_active: !isActive }),
@@ -49,7 +49,7 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/watchlists/${watchlist.id}`, {
+      const response = await fetch(`/api/watchlists/by-id?id=${watchlist.id}`, {
         method: 'DELETE',
       });
 

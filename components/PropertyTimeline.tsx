@@ -27,7 +27,7 @@ export default function PropertyTimeline({ propertyId }: PropertyTimelineProps) 
   useEffect(() => {
     async function fetchHistory() {
       try {
-        const response = await fetch(`/api/properties/${propertyId}/history`);
+        const response = await fetch(`/api/properties/history?id=${propertyId}`);
         const data = await response.json();
 
         if (data.success) {

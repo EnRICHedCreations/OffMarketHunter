@@ -68,7 +68,7 @@ export default function EditWatchlistPage() {
       }
 
       try {
-        const response = await fetch(`/api/watchlists/${params.id}`);
+        const response = await fetch(`/api/watchlists/by-id?id=${params.id}`);
         if (!response.ok) {
           setError('Failed to load watchlist');
           setFetchingData(false);
@@ -145,7 +145,7 @@ export default function EditWatchlistPage() {
         alert_threshold: parseInt(data.alert_threshold),
       };
 
-      const response = await fetch(`/api/watchlists/${params.id}`, {
+      const response = await fetch(`/api/watchlists/by-id?id=${params.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

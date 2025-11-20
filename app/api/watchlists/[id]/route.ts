@@ -26,7 +26,7 @@ const watchlistUpdateSchema = z.object({
   is_active: z.boolean().optional(),
 });
 
-// GET /api/watchlists/[id] - Get single watchlist
+// GET /api/watchlists/[id] - Get single watchlist by ID
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

@@ -345,16 +345,16 @@ export default async function PropertyDetailPage({
             )}
 
             {/* Motivation Score */}
-            {property.motivation_score && property.motivation_score_dom && property.motivation_score_reductions && property.motivation_score_off_market && property.motivation_score_status && property.motivation_score_market ? (
+            {property.motivation_score != null && property.motivation_score_dom != null && property.motivation_score_reductions != null && property.motivation_score_off_market != null && property.motivation_score_status != null && property.motivation_score_market != null ? (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Motivation Analysis</h2>
                 <MotivationScoreBreakdown
-                  totalScore={typeof property.motivation_score === 'string' ? parseFloat(property.motivation_score) : property.motivation_score}
-                  domComponent={typeof property.motivation_score_dom === 'string' ? parseFloat(property.motivation_score_dom) : property.motivation_score_dom}
-                  reductionComponent={typeof property.motivation_score_reductions === 'string' ? parseFloat(property.motivation_score_reductions) : property.motivation_score_reductions}
-                  offMarketComponent={typeof property.motivation_score_off_market === 'string' ? parseFloat(property.motivation_score_off_market) : property.motivation_score_off_market}
-                  statusComponent={typeof property.motivation_score_status === 'string' ? parseFloat(property.motivation_score_status) : property.motivation_score_status}
-                  marketComponent={typeof property.motivation_score_market === 'string' ? parseFloat(property.motivation_score_market) : property.motivation_score_market}
+                  totalScore={typeof property.motivation_score === 'string' ? parseFloat(property.motivation_score) || 0 : property.motivation_score || 0}
+                  domComponent={typeof property.motivation_score_dom === 'string' ? parseFloat(property.motivation_score_dom) || 0 : property.motivation_score_dom || 0}
+                  reductionComponent={typeof property.motivation_score_reductions === 'string' ? parseFloat(property.motivation_score_reductions) || 0 : property.motivation_score_reductions || 0}
+                  offMarketComponent={typeof property.motivation_score_off_market === 'string' ? parseFloat(property.motivation_score_off_market) || 0 : property.motivation_score_off_market || 0}
+                  statusComponent={typeof property.motivation_score_status === 'string' ? parseFloat(property.motivation_score_status) || 0 : property.motivation_score_status || 0}
+                  marketComponent={typeof property.motivation_score_market === 'string' ? parseFloat(property.motivation_score_market) || 0 : property.motivation_score_market || 0}
                 />
               </div>
             ) : (

@@ -40,15 +40,31 @@ export async function GET(
 
     const { id } = await params;
 
+    console.log(`[GET /api/watchlists/${id}] User ID: ${session.user.id}, Watchlist ID: ${id}`);
+
+    // First check if watchlist exists at all
+    const checkExists = await sql`
+      SELECT id, user_id FROM watchlists WHERE id = ${id}
+    `;
+
+    if (checkExists.rows.length === 0) {
+      console.log(`[GET /api/watchlists/${id}] Watchlist does not exist`);
+      return NextResponse.json({ error: 'Watchlist not found' }, { status: 404 });
+    }
+
+    console.log(`[GET /api/watchlists/${id}] Watchlist exists with user_id: ${checkExists.rows[0].user_id}`);
+
     const result = await sql`
       SELECT * FROM watchlists
       WHERE id = ${id} AND user_id = ${session.user.id}
     `;
 
     if (result.rows.length === 0) {
+      console.log(`[GET /api/watchlists/${id}] User ${session.user.id} does not own this watchlist (owner: ${checkExists.rows[0].user_id})`);
       return NextResponse.json({ error: 'Watchlist not found' }, { status: 404 });
     }
 
+    console.log(`[GET /api/watchlists/${id}] Successfully fetched watchlist`);
     return NextResponse.json({ watchlist: result.rows[0] });
   } catch (error) {
     console.error('Error fetching watchlist:', error);

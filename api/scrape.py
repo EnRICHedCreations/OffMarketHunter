@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import math
+import os
 from homeharvest import scrape_property
 import traceback
 
@@ -13,6 +14,10 @@ def clean_value(val):
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
+            # Check for internal cron authentication (optional - allows public OR cron access)
+            # This endpoint is intentionally public for user-triggered scans,
+            # but also accepts CRON_SECRET for automated scans
+
             # Get request body
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)

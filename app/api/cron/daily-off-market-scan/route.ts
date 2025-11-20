@@ -76,12 +76,13 @@ export async function GET(request: Request) {
         };
 
         // Scan for both off-market and active listings
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const scanTypes = ['off_market', 'for_sale'];
 
         for (const scanType of scanTypes) {
           try {
-            // Use internal localhost to bypass Vercel deployment protection
-            const scrapeResponse = await fetch(`http://localhost:3000/api/scrape`, {
+            // Call scrape API - it's public for user-triggered scans
+            const scrapeResponse = await fetch(`${baseUrl}/api/scrape`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -100,7 +101,7 @@ export async function GET(request: Request) {
 
             if (scrapeResult.success && scrapeResult.properties?.length > 0) {
               // Store properties
-              const storeResponse = await fetch(`http://localhost:3000/api/properties/store`, {
+              const storeResponse = await fetch(`${baseUrl}/api/properties/store`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -128,7 +129,7 @@ export async function GET(request: Request) {
 
         // Auto-calculate motivation scores for this watchlist's properties
         try {
-          const scoreResponse = await fetch(`http://localhost:3000/api/properties/score`, {
+          const scoreResponse = await fetch(`${baseUrl}/api/properties/score`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

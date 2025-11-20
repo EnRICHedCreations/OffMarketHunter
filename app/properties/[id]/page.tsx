@@ -127,8 +127,7 @@ export default async function PropertyDetailPage({
       )}`;
 
   return (
-    <div className="p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto">
         {/* Back Button */}
         <Link
           href="/properties"
@@ -383,7 +382,6 @@ export default async function PropertyDetailPage({
             </a>
           </div>
         </div>
-      </div>
     </div>
   );
 }

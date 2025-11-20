@@ -15,11 +15,11 @@ export default async function PropertiesLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="lg:pl-64">
         <Header user={session.user} />
-        <main className="flex-1 overflow-y-auto">
+        <main className="py-8 px-4 sm:px-6 lg:px-8">
           {children}
         </main>
       </div>

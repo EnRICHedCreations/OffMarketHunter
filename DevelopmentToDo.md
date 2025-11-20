@@ -88,63 +88,71 @@
 - [x] Fix Next.js 16 async params compatibility
 
 ### Phase 3: Python Integration (Complete)
-- [x] Install HomeHarvest Elite library in offmarkethunter directory
-- [x] Create Python scraper script (`scripts/scrape_properties.py`)
-  - [x] Set up sys.path for HomeHarvest Elite import
-  - [x] Implement `scrape_off_market()` function with all watchlist filters
-  - [x] Implement `scrape_active_properties()` for status change detection
-  - [x] Add safe conversion functions for NaN/missing data handling
-  - [x] JSON stdin/stdout communication with Node.js
-- [x] Create TypeScript scraper wrapper (`lib/scraper.ts`)
-  - [x] Spawn Python child process
-  - [x] Send watchlist criteria as JSON
-  - [x] Parse property results from Python
-  - [x] Error handling for Python process failures
-- [x] Create scraping API endpoint (`/api/watchlists/[id]/scrape`)
-  - [x] Fetch watchlist criteria from database
-  - [x] Call Python scraper with off-market parameters
-  - [x] Store/update properties in database
-  - [x] Check for duplicates using property_id
-  - [x] Return scrape statistics (new/updated counts)
-- [x] Add "Scan Now" button to watchlist cards
+- [x] Install HomeHarvest Elite from Git (`git+https://github.com/...`)
+- [x] Create Python serverless function (`api/scrape.py`)
+  - [x] Vercel Python runtime integration
+  - [x] Implement off-market scraping with filters
+  - [x] Implement active property scraping for status changes
+  - [x] Add NaN handling with `clean_value()` function
+  - [x] JSON request/response handling
+  - [x] Error logging with traceback
+- [x] Frontend integration
+  - [x] Direct API calls from WatchlistCard to `/api/scrape`
+  - [x] Bypassed problematic Next.js dynamic routes
   - [x] Loading state during scraping
   - [x] Success/error message display
-  - [x] Auto-refresh after completion
-- [x] Create Python setup documentation (PYTHON_SETUP.md)
-  - [x] Installation instructions
-  - [x] Directory structure explanation
-  - [x] Troubleshooting guide
-  - [x] Production deployment notes
-- [x] Create requirements.txt for Python dependencies
+- [x] Add "Scan Now" button to watchlist cards
+- [x] Fix Python command detection (Windows: `py`, Unix: `python3`)
+- [x] Vercel deployment configuration
+  - [x] Auto-install HomeHarvest Elite from Git
+  - [x] Python dependencies in api/requirements.txt
 - [x] Fix watchlist layout to include dashboard sidebar
-- [x] Test scraping with real Realtor.com data (Phoenix, AZ - 30 properties returned)
+- [x] Test scraping with real Realtor.com data ✅ Working!
+
+**Key Lessons Learned:**
+- Vercel Python functions work best with direct imports, not child processes
+- Install packages from Git in requirements.txt instead of bundling
+- Use `math.isnan()` to handle NaN values before JSON serialization
+- Frontend can call Python APIs directly, no need for Next.js wrapper routes
 
 ## 📋 Todo (Upcoming Phases)
 
 ### Phase 4: Property Storage & Display
-- [ ] Create property storage logic
-  - [ ] Save scraped properties to database
-  - [ ] Handle duplicates (property_id unique constraint)
+- [ ] Create property storage API endpoint (`/api/properties/store`)
+  - [ ] Accept scraped properties from frontend
+  - [ ] Save to database with user_id and watchlist_id
+  - [ ] Handle duplicates (UPDATE if exists, INSERT if new)
   - [ ] Store raw_data as JSONB
-- [ ] Build property card component
-  - [ ] Property photo
-  - [ ] Motivation score badge
-  - [ ] Address and basic info
+  - [ ] Return storage statistics (new/updated counts)
+- [ ] Update WatchlistCard to save scraped properties
+  - [ ] Call storage API after successful scrape
+  - [ ] Display save statistics in success message
+- [ ] Build property card component (`components/PropertyCard.tsx`)
+  - [ ] Property photo with fallback
+  - [ ] Address and basic info (beds, baths, sqft, price)
+  - [ ] Motivation score badge (placeholder for now)
   - [ ] "View Details" button
-- [ ] Create property list view on dashboard
+  - [ ] Days on market indicator
+- [ ] Create property list page (`app/properties/page.tsx`)
+  - [ ] Fetch properties from database
+  - [ ] Display in grid layout
+  - [ ] Empty state for no properties
+  - [ ] Property count display
+- [ ] Add property filtering UI
+  - [ ] Filter by watchlist dropdown
+  - [ ] Filter by status (off-market, for-sale, pending, etc.)
+  - [ ] Price range slider
+  - [ ] Beds/baths min selectors
+- [ ] Add property sorting
+  - [ ] Sort by date added (newest first)
+  - [ ] Sort by price (high/low)
+  - [ ] Sort by days on market
 - [ ] Implement property detail page (`app/properties/[id]/page.tsx`)
   - [ ] Full property information
   - [ ] Photo gallery
-  - [ ] Agent contact info
-  - [ ] Map integration
-- [ ] Add property filtering UI
-  - [ ] By watchlist
-  - [ ] By motivation score
-  - [ ] By status
-- [ ] Add property sorting
-  - [ ] By motivation score
-  - [ ] By date
-  - [ ] By price
+  - [ ] Agent contact info with click-to-call/email
+  - [ ] Property history timeline
+  - [ ] Map integration (Google Maps or Mapbox)
 
 ### Phase 5: Historical Tracking
 - [ ] Implement property_history table logic
@@ -351,38 +359,42 @@ offmarkethunter/
 
 ## 🚀 Next Immediate Steps
 
-1. **Test Python Scraping on Production/Vercel**
-   - Deploy to Vercel with Python runtime
-   - Test "Scan Now" button with real watchlist
-   - Verify HomeHarvest Elite works in production environment
-   - Check property storage and duplicate handling
+1. **Create Property Storage Backend**
+   - Build `/api/properties/store` endpoint
+   - Save scraped properties to database
+   - Handle duplicates and updates
+   - Return storage statistics
 
-2. **Begin Phase 4: Property Storage & Display**
-   - Build property card component with photo, address, and motivation placeholder
-   - Create property list view on dashboard
-   - Display stored properties from database
-   - Add filtering by watchlist
+2. **Build Property Display UI**
+   - Create PropertyCard component
+   - Build properties list page
+   - Display scraped properties in grid
+   - Add basic filtering
 
-3. **Implement Property Detail Page**
-   - Create `/properties/[id]` route
-   - Display full property information
-   - Show photo gallery
-   - Add agent contact information
+3. **Implement Property Details**
+   - Create property detail page
+   - Show full information and photos
+   - Display agent contact info
+   - Add property timeline
 
 ## 📊 Overall Progress
 
 **Phase 1 (Foundation):** 100% Complete ✅
 **Phase 2 (Watchlists):** 100% Complete ✅
 **Phase 3 (Python Integration):** 100% Complete ✅
-**Phase 4-12:** 0% Complete
+**Phase 4 (Property Storage):** 0% Complete
+**Phase 5-12:** 0% Complete
 **Overall Project:** ~25% Complete
 
 ## 🎯 Current Focus
 
-Phase 3 is complete! Ready to:
-1. Deploy and test Python scraping on Vercel
-2. Begin Phase 4: Property Storage & Display
-3. Build property card components and list views
+Phase 3 is complete - scraping works! 🎉
+
+**Next up - Phase 4: Property Storage & Display**
+1. Create backend to store scraped properties in database
+2. Build property card and list UI components
+3. Display properties on dashboard
+4. Add filtering and sorting capabilities
 
 ## 🔗 Dependencies Between Phases
 

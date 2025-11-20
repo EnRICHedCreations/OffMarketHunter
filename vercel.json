@@ -1,4 +1,7 @@
 {
-  "buildCommand": "npm run build",
-  "installCommand": "npm install && pip3 install -r requirements.txt"
+  "functions": {
+    "api/scrape.py": {
+      "runtime": "python3.9"
+    }
+  }
 }

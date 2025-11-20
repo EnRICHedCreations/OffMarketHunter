@@ -1,8 +1,5 @@
 // Scraper utility for HomeHarvest Elite integration
-// Calls Python script to scrape property data from Realtor.com
-
-import { spawn } from 'child_process';
-import path from 'path';
+// Calls Python API to scrape property data from Realtor.com
 
 interface WatchlistCriteria {
   location: string;
@@ -50,98 +47,63 @@ interface ScrapedProperty {
   raw_data: any;
 }
 
-// Detect available Python command
-function getPythonCommand(): string {
-  const platform = process.platform;
-
-  // On Windows, try these commands in order
-  if (platform === 'win32') {
-    return 'py'; // Python Launcher for Windows (most reliable)
-  }
-
-  // On Unix-like systems, prefer python3
-  return 'python3';
-}
-
 async function callPythonScraper(
   scrapeType: 'off_market' | 'active',
   criteria: WatchlistCriteria,
   updatedHours?: number
 ): Promise<ScrapedProperty[]> {
-  return new Promise((resolve, reject) => {
-    const scriptPath = path.join(process.cwd(), 'scripts', 'scrape_properties.py');
-    const pythonCmd = getPythonCommand();
+  // Prepare input data
+  const inputData = {
+    type: scrapeType,
+    criteria: {
+      location: criteria.location,
+      price_min: criteria.price_min,
+      price_max: criteria.price_max,
+      beds_min: criteria.beds_min,
+      beds_max: criteria.beds_max,
+      baths_min: criteria.baths_min,
+      baths_max: criteria.baths_max,
+      sqft_min: criteria.sqft_min,
+      sqft_max: criteria.sqft_max,
+      lot_sqft_min: criteria.lot_sqft_min,
+      lot_sqft_max: criteria.lot_sqft_max,
+      year_built_min: criteria.year_built_min,
+      year_built_max: criteria.year_built_max,
+      property_types: criteria.property_types,
+    },
+    updated_hours: updatedHours,
+  };
 
-    // Prepare input data
-    const inputData = {
-      type: scrapeType,
-      criteria: {
-        location: criteria.location,
-        price_min: criteria.price_min,
-        price_max: criteria.price_max,
-        beds_min: criteria.beds_min,
-        beds_max: criteria.beds_max,
-        baths_min: criteria.baths_min,
-        baths_max: criteria.baths_max,
-        sqft_min: criteria.sqft_min,
-        sqft_max: criteria.sqft_max,
-        lot_sqft_min: criteria.lot_sqft_min,
-        lot_sqft_max: criteria.lot_sqft_max,
-        year_built_min: criteria.year_built_min,
-        year_built_max: criteria.year_built_max,
-        property_types: criteria.property_types,
+  try {
+    // Call Python API endpoint
+    const apiUrl = process.env.VERCEL
+      ? '/api/scrape' // On Vercel, use the Python function
+      : 'http://localhost:3000/api/scrape'; // Local development
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      updated_hours: updatedHours,
-    };
-
-    console.log(`Using Python command: ${pythonCmd}`);
-
-    // Spawn Python process
-    const python = spawn(pythonCmd, [scriptPath]);
-
-    let stdout = '';
-    let stderr = '';
-
-    // Send input data to Python script
-    python.stdin.write(JSON.stringify(inputData));
-    python.stdin.end();
-
-    // Collect output
-    python.stdout.on('data', (data) => {
-      stdout += data.toString();
+      body: JSON.stringify(inputData),
     });
 
-    python.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Python API failed: ${response.status} ${errorText}`);
+    }
 
-    // Handle completion
-    python.on('close', (code) => {
-      if (code !== 0) {
-        console.error('Python script error:', stderr);
-        reject(new Error(`Python script failed with code ${code}: ${stderr}`));
-        return;
-      }
+    const result = await response.json();
 
-      try {
-        const result = JSON.parse(stdout);
+    if (!result.success) {
+      throw new Error(result.error || 'Unknown error from Python API');
+    }
 
-        if (!result.success) {
-          reject(new Error(result.error || 'Unknown error from Python script'));
-          return;
-        }
-
-        resolve(result.properties || []);
-      } catch (error) {
-        reject(new Error(`Failed to parse Python output: ${error}`));
-      }
-    });
-
-    // Handle errors
-    python.on('error', (error) => {
-      reject(new Error(`Failed to start Python script: ${error.message}`));
-    });
-  });
+    return result.properties || [];
+  } catch (error) {
+    console.error('Error calling Python scraper:', error);
+    throw error;
+  }
 }
 
 export async function scrapeOffMarketProperties(

@@ -325,6 +325,26 @@ export async function POST(request: Request) {
       WHERE id = ${watchlist_id}
     `;
 
+    // Auto-calculate motivation scores for properties in this watchlist
+    try {
+      const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000';
+
+      await fetch(`${baseUrl}/api/properties/calculate-scores`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          watchlist_id: watchlist_id,
+        }),
+      });
+    } catch (scoreError) {
+      console.error('Error auto-calculating scores:', scoreError);
+      // Don't fail the whole operation if score calculation fails
+    }
+
     return NextResponse.json({
       success: true,
       new_count: newCount,

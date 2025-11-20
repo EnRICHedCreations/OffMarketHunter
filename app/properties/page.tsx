@@ -38,6 +38,8 @@ export default function PropertiesPage() {
   const [priceMax, setPriceMax] = useState<string>('');
   const [bedsMin, setBedsMin] = useState<string>('');
   const [bathsMin, setBathsMin] = useState<string>('');
+  const [scoreMin, setScoreMin] = useState<string>('');
+  const [scoreMax, setScoreMax] = useState<string>('');
 
   // Sort states
   const [sortBy, setSortBy] = useState<string>('created_at');
@@ -71,6 +73,8 @@ export default function PropertiesPage() {
         if (priceMax) params.append('price_max', priceMax);
         if (bedsMin) params.append('beds_min', bedsMin);
         if (bathsMin) params.append('baths_min', bathsMin);
+        if (scoreMin) params.append('score_min', scoreMin);
+        if (scoreMax) params.append('score_max', scoreMax);
         params.append('sort_by', sortBy);
         params.append('sort_order', sortOrder);
 
@@ -88,7 +92,7 @@ export default function PropertiesPage() {
     }
 
     fetchProperties();
-  }, [watchlistFilter, statusFilter, priceMin, priceMax, bedsMin, bathsMin, sortBy, sortOrder]);
+  }, [watchlistFilter, statusFilter, priceMin, priceMax, bedsMin, bathsMin, scoreMin, scoreMax, sortBy, sortOrder]);
 
   const handleResetFilters = () => {
     setWatchlistFilter('');
@@ -97,6 +101,8 @@ export default function PropertiesPage() {
     setPriceMax('');
     setBedsMin('');
     setBathsMin('');
+    setScoreMin('');
+    setScoreMax('');
     setSortBy('created_at');
     setSortOrder('DESC');
   };
@@ -224,6 +230,38 @@ export default function PropertiesPage() {
                 <option value="3">3+</option>
                 <option value="4">4+</option>
               </select>
+            </div>
+
+            {/* Motivation Score Min */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Min Motivation Score
+              </label>
+              <input
+                type="number"
+                value={scoreMin}
+                onChange={(e) => setScoreMin(e.target.value)}
+                placeholder="0"
+                min="0"
+                max="100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Motivation Score Max */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Max Motivation Score
+              </label>
+              <input
+                type="number"
+                value={scoreMax}
+                onChange={(e) => setScoreMax(e.target.value)}
+                placeholder="100"
+                min="0"
+                max="100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
             </div>
 
             {/* Sort By */}

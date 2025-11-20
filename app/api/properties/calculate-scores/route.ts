@@ -12,8 +12,10 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const propertyId = body.property_id;
+    const watchlistId = body.watchlist_id;
 
     // If property_id is provided, calculate for single property
+    // If watchlist_id is provided, calculate for all properties in that watchlist
     // Otherwise, calculate for all user's properties
     let properties;
 
@@ -29,6 +31,16 @@ export async function POST(request: Request) {
       if (result.rows.length === 0) {
         return NextResponse.json({ error: 'Property not found' }, { status: 404 });
       }
+
+      properties = result.rows;
+    } else if (watchlistId) {
+      // Get all properties in the watchlist
+      const result = await sql`
+        SELECT p.*, w.user_id
+        FROM properties p
+        INNER JOIN watchlists w ON p.watchlist_id = w.id
+        WHERE p.watchlist_id = ${watchlistId} AND w.user_id = ${session.user.id}
+      `;
 
       properties = result.rows;
     } else {

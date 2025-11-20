@@ -26,6 +26,8 @@ export async function GET(request: Request) {
     const priceMax = searchParams.get('price_max');
     const bedsMin = searchParams.get('beds_min');
     const bathsMin = searchParams.get('baths_min');
+    const scoreMin = searchParams.get('score_min');
+    const scoreMax = searchParams.get('score_max');
     const sortBy = searchParams.get('sort_by') || 'created_at';
     const sortOrder = searchParams.get('sort_order') || 'DESC';
 
@@ -67,6 +69,18 @@ export async function GET(request: Request) {
     if (bathsMin) {
       whereConditions.push(`p.baths >= $${paramIndex}`);
       queryParams.push(parseFloat(bathsMin));
+      paramIndex++;
+    }
+
+    if (scoreMin) {
+      whereConditions.push(`p.motivation_score >= $${paramIndex}`);
+      queryParams.push(parseFloat(scoreMin));
+      paramIndex++;
+    }
+
+    if (scoreMax) {
+      whereConditions.push(`p.motivation_score <= $${paramIndex}`);
+      queryParams.push(parseFloat(scoreMax));
       paramIndex++;
     }
 

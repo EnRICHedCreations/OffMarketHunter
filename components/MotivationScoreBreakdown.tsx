@@ -1,12 +1,12 @@
 'use client';
 
 interface MotivationScoreBreakdownProps {
-  totalScore: number;
-  domComponent: number;
-  reductionComponent: number;
-  offMarketComponent: number;
-  statusComponent: number;
-  marketComponent: number;
+  totalScore: number | null;
+  domComponent: number | null;
+  reductionComponent: number | null;
+  offMarketComponent: number | null;
+  statusComponent: number | null;
+  marketComponent: number | null;
 }
 
 export default function MotivationScoreBreakdown({
@@ -17,6 +17,13 @@ export default function MotivationScoreBreakdown({
   statusComponent,
   marketComponent,
 }: MotivationScoreBreakdownProps) {
+  // Ensure all values are numbers with defaults
+  const total = totalScore ?? 0;
+  const dom = domComponent ?? 0;
+  const reduction = reductionComponent ?? 0;
+  const offMarket = offMarketComponent ?? 0;
+  const status = statusComponent ?? 0;
+  const market = marketComponent ?? 0;
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-red-600';
     if (score >= 80) return 'text-orange-600';
@@ -76,15 +83,15 @@ export default function MotivationScoreBreakdown({
                 stroke="currentColor"
                 strokeWidth="8"
                 fill="none"
-                strokeDasharray={`${(totalScore / 100) * 351.86} 351.86`}
-                className={getScoreColor(totalScore)}
+                strokeDasharray={`${(total / 100) * 351.86} 351.86`}
+                className={getScoreColor(total)}
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <div className={`text-3xl font-bold ${getScoreColor(totalScore)}`}>
-                  {totalScore.toFixed(0)}
+                <div className={`text-3xl font-bold ${getScoreColor(total)}`}>
+                  {total.toFixed(0)}
                 </div>
                 <div className="text-xs text-gray-500">out of 100</div>
               </div>
@@ -93,11 +100,11 @@ export default function MotivationScoreBreakdown({
           <div className="mt-3">
             <h3 className="text-lg font-semibold text-gray-900">Motivation Score</h3>
             <p className="text-sm text-gray-600">
-              {totalScore >= 90 && 'Extremely High Motivation'}
-              {totalScore >= 80 && totalScore < 90 && 'Very High Motivation'}
-              {totalScore >= 70 && totalScore < 80 && 'High Motivation'}
-              {totalScore >= 60 && totalScore < 70 && 'Moderate Motivation'}
-              {totalScore < 60 && 'Low Motivation'}
+              {total >= 90 && 'Extremely High Motivation'}
+              {total >= 80 && total < 90 && 'Very High Motivation'}
+              {total >= 70 && total < 80 && 'High Motivation'}
+              {total >= 60 && total < 70 && 'Moderate Motivation'}
+              {total < 60 && 'Low Motivation'}
             </p>
           </div>
         </div>
@@ -109,35 +116,35 @@ export default function MotivationScoreBreakdown({
 
         <ScoreBar
           label="Days on Market"
-          score={domComponent}
+          score={dom}
           maxScore={25}
           description="Longer time on market indicates higher seller motivation"
         />
 
         <ScoreBar
           label="Price Reductions"
-          score={reductionComponent}
+          score={reduction}
           maxScore={30}
           description="Multiple or significant price drops show willingness to negotiate"
         />
 
         <ScoreBar
           label="Off-Market Duration"
-          score={offMarketComponent}
+          score={offMarket}
           maxScore={20}
           description="Recently delisted properties may be more motivated"
         />
 
         <ScoreBar
           label="Status Changes"
-          score={statusComponent}
+          score={status}
           maxScore={15}
           description="Failed deals or expirations indicate urgency"
         />
 
         <ScoreBar
           label="Market Conditions"
-          score={marketComponent}
+          score={market}
           maxScore={10}
           description="Property performance vs. market average"
         />

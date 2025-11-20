@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { signIn } from 'next-auth/react';
+import { handleSignIn } from '@/app/actions/auth';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -36,19 +36,15 @@ function LoginForm() {
     setError(null);
 
     try {
-      const result = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
+      const result = await handleSignIn(data.email, data.password);
 
-      if (result?.error) {
-        setError('Invalid email or password');
+      if (!result.success) {
+        setError(result.error || 'Invalid email or password');
         setLoading(false);
         return;
       }
 
-      router.push('/dashboard');
+      // Successful login will redirect via server action
       router.refresh();
     } catch (err) {
       setError('Failed to log in. Please try again.');

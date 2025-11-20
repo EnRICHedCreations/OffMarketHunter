@@ -95,7 +95,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         {property.motivation_score && (
           <div className="absolute top-2 right-2">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${getMotivationBadgeColor(property.motivation_score)}`}>
-              Score: {property.motivation_score}
+              Score: {typeof property.motivation_score === 'number' ? Math.round(property.motivation_score) : parseFloat(property.motivation_score as any).toFixed(0)}
             </span>
           </div>
         )}

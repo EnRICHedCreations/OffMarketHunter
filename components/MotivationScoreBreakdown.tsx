@@ -41,13 +41,15 @@ export default function MotivationScoreBreakdown({
   };
 
   const ScoreBar = ({ label, score, maxScore, description }: { label: string; score: number; maxScore: number; description: string }) => {
-    const percentage = (score / maxScore) * 100;
+    // Extra safety: ensure score is a number
+    const safeScore = typeof score === 'number' ? score : 0;
+    const percentage = (safeScore / maxScore) * 100;
 
     return (
       <div className="mb-4">
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm font-medium text-gray-700">{label}</span>
-          <span className="text-sm font-semibold text-gray-900">{score.toFixed(1)} / {maxScore}</span>
+          <span className="text-sm font-semibold text-gray-900">{safeScore.toFixed(1)} / {maxScore}</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div

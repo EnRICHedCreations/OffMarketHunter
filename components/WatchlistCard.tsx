@@ -66,14 +66,28 @@ export default function WatchlistCard({ watchlist }: WatchlistCardProps) {
     setIsScanning(true);
     setScanMessage(null);
     try {
-      const response = await fetch(`/api/watchlists/${watchlist.id}/scrape`, {
+      // Call Python API directly
+      const response = await fetch(`/api/scrape`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'off_market',
+          criteria: {
+            location: watchlist.location,
+            price_min: watchlist.price_min,
+            price_max: watchlist.price_max,
+            beds_min: watchlist.beds_min,
+            beds_max: watchlist.beds_max,
+          },
+        }),
       });
 
       const result = await response.json();
 
-      if (response.ok) {
-        setScanMessage(result.message);
+      if (response.ok && result.success) {
+        setScanMessage(`Found ${result.count} properties`);
         setTimeout(() => {
           router.refresh();
           setScanMessage(null);

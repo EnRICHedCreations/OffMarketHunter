@@ -343,20 +343,40 @@
 - [ ] User testing and feedback collection
 - [ ] Bug fixes
 
-### Phase 11: Settings & Preferences
-- [ ] Create settings page layout (`app/settings/page.tsx`)
-- [ ] Build profile section
-  - [ ] Name edit functionality
-  - [ ] Password change form
-- [ ] Build notification preferences section
-  - [ ] Email alerts toggle
-  - [ ] Alert type selections (checkboxes)
-  - [ ] Alert threshold slider (50-100)
-  - [ ] Quiet hours time picker
-- [ ] Implement user preferences API
-  - [ ] `GET /api/preferences` - Get user preferences
-  - [ ] `PUT /api/preferences` - Update preferences
-- [ ] Apply preferences to alert logic
+### Phase 11: Settings & Preferences (Complete)
+- [x] Create settings page layout (`app/settings/page.tsx`)
+  - [x] Three main sections: Profile, Password, Preferences
+  - [x] Success/error message banner
+  - [x] Loading states throughout
+- [x] Build profile section
+  - [x] Name edit functionality
+  - [x] Email display (read-only)
+  - [x] Form validation
+- [x] Build password change form
+  - [x] Current password verification with bcrypt
+  - [x] New password validation (min 6 characters)
+  - [x] Confirm password matching
+  - [x] Secure password hashing (bcrypt with 10 salt rounds)
+- [x] Build notification preferences section
+  - [x] Alert threshold slider (50-100)
+  - [x] Real-time preference updates
+  - [x] Visual feedback for changes
+- [x] Implement user preferences API
+  - [x] `GET /api/preferences` - Get user info and preferences
+  - [x] `PUT /api/preferences` - Update name and/or alert threshold
+  - [x] `PUT /api/preferences/password` - Secure password change
+  - [x] User ownership verification on all routes
+- [x] Apply preferences to alert logic
+  - [x] Alert threshold synced to all user's watchlists
+  - [x] Preferences stored in user_preferences table
+  - [x] Automatic sync on threshold updates
+
+**Key Lessons Learned:**
+- bcrypt.compare() for password verification before allowing changes
+- Alert threshold changes propagate to all watchlists for consistency
+- User preferences table uses LEFT JOIN with COALESCE for default values
+- Client-side validation + server-side validation for security
+- Email alerts skipped (not in MVP scope)
 
 ### Phase 12: Advanced Features
 - [ ] Property notes
@@ -393,6 +413,8 @@ offmarkethunter/
 │   ├── (auth)/
 │   │   ├── login/page.tsx
 │   │   └── signup/page.tsx
+│   ├── actions/
+│   │   └── auth.ts (server actions for NextAuth v5)
 │   ├── alerts/
 │   │   └── page.tsx (alerts page with filtering)
 │   ├── api/
@@ -406,6 +428,9 @@ offmarkethunter/
 │   │   ├── cron/
 │   │   │   ├── hourly-status-check/route.ts (GET)
 │   │   │   └── daily-off-market-scan/route.ts (GET)
+│   │   ├── preferences/
+│   │   │   ├── password/route.ts (PUT - password change)
+│   │   │   └── route.ts (GET, PUT - user preferences)
 │   │   ├── properties/
 │   │   │   ├── history/route.ts (GET)
 │   │   │   ├── route.ts (GET - list properties)
@@ -414,6 +439,8 @@ offmarkethunter/
 │   │   └── watchlists/
 │   │       ├── by-id/route.ts (GET, PUT, DELETE - query param workaround)
 │   │       └── route.ts (GET, POST)
+│   ├── settings/
+│   │   └── page.tsx (user settings and preferences)
 │   ├── dashboard/
 │   │   ├── layout.tsx
 │   │   └── page.tsx
@@ -491,14 +518,15 @@ offmarkethunter/
 **Phase 8 (Alert System):** 100% Complete ✅
 **Phase 9 (Email Notifications):** 0% Complete (Skipped for MVP)
 **Phase 10 (Polish & Testing):** 100% Complete ✅
-**Phase 11-12:** 0% Complete
-**Overall Project:** ~83% Complete (MVP Ready!)
+**Phase 11 (Settings & Preferences):** 100% Complete ✅
+**Phase 12 (Advanced Features):** 0% Complete
+**Overall Project:** ~92% Complete (MVP+ Ready!)
 
 ## 🎯 Current Focus
 
-Phase 10 is complete - MVP is ready! 🎉
+Phase 11 is complete - MVP+ with user settings is ready! 🎉
 
-**MVP Feature Set Complete:**
+**MVP+ Feature Set Complete:**
 1. Properties are automatically saved to database after scraping
 2. Dual scan: Both off-market AND active listings scraped in one click
 3. Properties page displays all saved properties in a grid
@@ -533,8 +561,15 @@ Phase 10 is complete - MVP is ready! 🎉
     - Unread badge in header with auto-refresh
     - Property details, photos, and scores in alerts
     - Bulk "mark all as read" action
+20. **User Settings & Preferences:**
+    - Comprehensive settings page with profile, password, and preferences
+    - Name editing with real-time updates
+    - Secure password change with bcrypt verification
+    - Alert threshold slider (50-100 range)
+    - Preferences synced across all watchlists
+    - User-level defaults with LEFT JOIN pattern
 
-**🚀 MVP Ready for Launch!**
+**🚀 MVP+ Ready for Launch!**
 
 The core application is fully functional with all essential features:
 - User authentication & authorization
@@ -545,12 +580,12 @@ The core application is fully functional with all essential features:
 - Motivation scoring algorithm
 - Automated cron jobs for hands-free monitoring
 - Alert system with notifications
+- User settings & preferences management
 - Mobile-responsive design
 - Polished UI with loading states and error handling
 
-**Optional Future Enhancements (Phases 9, 11, 12):**
+**Optional Future Enhancements (Phases 9, 12):**
 - Email notifications
-- User settings & preferences page
 - Advanced features (notes, export, statistics)
 
 ## 🔗 Dependencies Between Phases

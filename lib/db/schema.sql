@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS properties (
     -- Price reduction tracking
     price_reduction_count INTEGER DEFAULT 0,
     total_price_reduction_amount DECIMAL(12, 2),
-    total_price_reduction_percent DECIMAL(5, 2),
+    total_price_reduction_percent DECIMAL(6, 2),
     last_price_reduction_date TIMESTAMP,
 
     -- Motivation score
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS property_history (
     old_price DECIMAL(12, 2),
     new_price DECIMAL(12, 2),
     price_change_amount DECIMAL(12, 2),
-    price_change_percent DECIMAL(5, 2),
+    price_change_percent DECIMAL(6, 2),
 
     -- Context
     days_since_last_event INTEGER,

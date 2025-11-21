@@ -59,6 +59,8 @@ export async function POST() {
         ALTER COLUMN motivation_score_market TYPE DECIMAL(6, 2)
     `;
 
+    await sql`ALTER TABLE properties ALTER COLUMN total_price_reduction_percent TYPE DECIMAL(6, 2)`;
+    await sql`ALTER TABLE property_history ALTER COLUMN price_change_percent TYPE DECIMAL(6, 2)`;
     await sql`ALTER TABLE properties ALTER COLUMN lot_sqft TYPE BIGINT`;
     await sql`ALTER TABLE alerts ALTER COLUMN motivation_score TYPE DECIMAL(6, 2)`;
 

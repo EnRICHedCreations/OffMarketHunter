@@ -22,6 +22,7 @@ const watchlistSchema = z.object({
   year_built_min: z.string().optional(),
   year_built_max: z.string().optional(),
   property_types: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
   track_off_market: z.boolean(),
   track_price_reductions: z.boolean(),
   track_expired: z.boolean(),
@@ -38,6 +39,17 @@ const propertyTypeOptions = [
   { value: 'land', label: 'Land' },
 ];
 
+const tagOptions = [
+  { value: 'fixer_upper', label: 'Fixer Upper' },
+  { value: 'foreclosure', label: 'Foreclosure' },
+  { value: 'short_sale', label: 'Short Sale' },
+  { value: 'cash_only', label: 'Cash Only' },
+  { value: 'seller_financing', label: 'Seller Financing' },
+  { value: 'needs_work', label: 'Needs Work' },
+  { value: 'turnkey', label: 'Turnkey' },
+  { value: 'investment', label: 'Investment Property' },
+];
+
 export default function EditWatchlistPage() {
   const router = useRouter();
   const params = useParams();
@@ -45,6 +57,7 @@ export default function EditWatchlistPage() {
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const {
     register,
@@ -103,6 +116,10 @@ export default function EditWatchlistPage() {
           setSelectedTypes(watchlist.property_types);
         }
 
+        if (watchlist.tags) {
+          setSelectedTags(watchlist.tags);
+        }
+
         setFetchingData(false);
       } catch (err) {
         console.error('Error fetching watchlist:', err);
@@ -116,6 +133,14 @@ export default function EditWatchlistPage() {
 
   const handleTypeToggle = (value: string) => {
     setSelectedTypes(prev =>
+      prev.includes(value)
+        ? prev.filter(t => t !== value)
+        : [...prev, value]
+    );
+  };
+
+  const handleTagToggle = (value: string) => {
+    setSelectedTags(prev =>
       prev.includes(value)
         ? prev.filter(t => t !== value)
         : [...prev, value]
@@ -142,6 +167,7 @@ export default function EditWatchlistPage() {
         year_built_min: data.year_built_min ? parseInt(data.year_built_min) : null,
         year_built_max: data.year_built_max ? parseInt(data.year_built_max) : null,
         property_types: selectedTypes.length > 0 ? selectedTypes : null,
+        tags: selectedTags.length > 0 ? selectedTags : null,
         alert_threshold: parseInt(data.alert_threshold),
       };
 
@@ -401,6 +427,28 @@ export default function EditWatchlistPage() {
                 }`}
               >
                 {type.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Property Tags/Keywords */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Tags/Keywords</h3>
+          <p className="text-sm text-gray-600 mb-3">Filter properties by specific tags or characteristics</p>
+          <div className="flex flex-wrap gap-3">
+            {tagOptions.map((tag) => (
+              <button
+                key={tag.value}
+                type="button"
+                onClick={() => handleTagToggle(tag.value)}
+                className={`px-4 py-2 rounded-lg border-2 transition ${
+                  selectedTags.includes(tag.value)
+                    ? 'border-green-600 bg-green-50 text-green-700'
+                    : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                }`}
+              >
+                {tag.label}
               </button>
             ))}
           </div>

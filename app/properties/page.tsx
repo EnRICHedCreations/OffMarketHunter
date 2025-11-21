@@ -143,7 +143,7 @@ export default function PropertiesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <ExportButton watchlistId={watchlistFilter || undefined} />
+          <ExportButton watchlistId={watchlistFilter ? parseInt(watchlistFilter) : undefined} />
           {selectedForCompare.length >= 2 && (
             <button
               onClick={handleCompare}

@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import PropertyTimeline from '@/components/PropertyTimeline';
 import MotivationScoreBreakdown from '@/components/MotivationScoreBreakdown';
+import PropertyNotes from '@/components/PropertyNotes';
+import PropertyInterestButton from '@/components/PropertyInterestButton';
 
 interface Property {
   id: number;
@@ -297,6 +299,7 @@ export default async function PropertyDetailPage({
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Property History</h2>
               <PropertyTimeline propertyId={property.id} />
             </div>
+{/* Property Notes */}            <PropertyNotes propertyId={property.id} />
           </div>
 
           {/* Right Column - Contact & Actions */}
@@ -367,6 +370,7 @@ export default async function PropertyDetailPage({
               </div>
             )}
 
+{/* Interest Button */}            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">              <PropertyInterestButton propertyId={property.id} />            </div>
             {/* Map Link */}
             <a
               href={mapLink}

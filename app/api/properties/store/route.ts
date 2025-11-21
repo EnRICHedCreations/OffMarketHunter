@@ -168,9 +168,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify watchlist ownership
+    // Verify watchlist ownership and get tags
     const watchlistResult = await sql`
-      SELECT id FROM watchlists
+      SELECT id, tags FROM watchlists
       WHERE id = ${watchlist_id} AND user_id = ${userId}
     `;
 
@@ -181,8 +181,11 @@ export async function POST(request: Request) {
       );
     }
 
+    const watchlistTags = watchlistResult.rows[0].tags || [];
+
     let newCount = 0;
     let updatedCount = 0;
+    let filteredCount = 0;
     const errors: string[] = [];
 
     // Process each property
@@ -191,6 +194,22 @@ export async function POST(request: Request) {
         if (!prop.property_id) {
           errors.push('Property missing property_id');
           continue;
+        }
+
+        // Filter by tags if watchlist has tags specified
+        if (watchlistTags.length > 0) {
+          const propertyTags = prop.raw_data?.tags || [];
+
+          // Check if property has at least one matching tag
+          const hasMatchingTag = watchlistTags.some((watchlistTag: string) =>
+            propertyTags.includes(watchlistTag)
+          );
+
+          if (!hasMatchingTag) {
+            // Property doesn't match tag criteria, skip it
+            filteredCount++;
+            continue;
+          }
         }
 
         // Check if property already exists
@@ -565,6 +584,7 @@ export async function POST(request: Request) {
       success: true,
       new_count: newCount,
       updated_count: updatedCount,
+      filtered_by_tags: filteredCount,
       total_processed: properties.length,
       errors: errors.length > 0 ? errors : undefined,
     });

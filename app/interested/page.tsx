@@ -97,51 +97,6 @@ export default function InterestedPropertiesPage() {
         </div>
         <ExportButton interested={true} />
       </div>
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Interested Properties</h1>
-          <p className="text-gray-600 mt-2">
-            Properties you've marked as interested
-          </p>
-        </div>
-        <ExportButton interested={true} />
-      </div>
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Interested Properties</h1>
-          <p className="text-gray-600 mt-2">
-            Properties you've marked as interested
-          </p>
-        </div>
-        <ExportButton interested={true} />
-      </div>
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Interested Properties</h1>
-          <p className="text-gray-600 mt-2">
-            Properties you've marked as interested
-          </p>
-        </div>
-        <ExportButton interested={true} />
-      </div>
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Interested Properties</h1>
-          <p className="text-gray-600 mt-2">
-            Properties you've marked as interested
-          </p>
-        </div>
-        <ExportButton interested={true} />
-      </div>
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Interested Properties</h1>
-          <p className="text-gray-600 mt-2">
-            Properties you've marked as interested
-          </p>
-        </div>
-        <ExportButton interested={true} />
-      </div>
 
       {error && (
         <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 text-red-700">

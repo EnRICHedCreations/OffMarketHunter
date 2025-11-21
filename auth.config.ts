@@ -49,8 +49,11 @@ export const authConfig: NextAuthConfig = {
       const isOnProperties = nextUrl.pathname.startsWith('/properties');
       const isOnAlerts = nextUrl.pathname.startsWith('/alerts');
       const isOnSettings = nextUrl.pathname.startsWith('/settings');
+      const isOnStatistics = nextUrl.pathname.startsWith('/statistics');
+      const isOnInterested = nextUrl.pathname.startsWith('/interested');
+      const isOnCompare = nextUrl.pathname.startsWith('/compare');
 
-      const isProtectedRoute = isOnDashboard || isOnWatchlists || isOnProperties || isOnAlerts || isOnSettings;
+      const isProtectedRoute = isOnDashboard || isOnWatchlists || isOnProperties || isOnAlerts || isOnSettings || isOnStatistics || isOnInterested || isOnCompare;
 
       if (isProtectedRoute) {
         if (isLoggedIn) return true;

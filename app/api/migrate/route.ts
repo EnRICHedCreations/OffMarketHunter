@@ -48,6 +48,20 @@ export async function POST() {
     await sql`CREATE INDEX IF NOT EXISTS idx_interest_property ON property_interest(property_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_interest_user ON property_interest(user_id, marked_at DESC)`;
 
+    // Fix numeric field overflows
+    await sql`
+      ALTER TABLE properties
+        ALTER COLUMN motivation_score TYPE DECIMAL(6, 2),
+        ALTER COLUMN motivation_score_dom TYPE DECIMAL(6, 2),
+        ALTER COLUMN motivation_score_reductions TYPE DECIMAL(6, 2),
+        ALTER COLUMN motivation_score_off_market TYPE DECIMAL(6, 2),
+        ALTER COLUMN motivation_score_status TYPE DECIMAL(6, 2),
+        ALTER COLUMN motivation_score_market TYPE DECIMAL(6, 2)
+    `;
+
+    await sql`ALTER TABLE properties ALTER COLUMN lot_sqft TYPE BIGINT`;
+    await sql`ALTER TABLE alerts ALTER COLUMN motivation_score TYPE DECIMAL(6, 2)`;
+
     return NextResponse.json({
       success: true,
       message: 'Migration completed successfully',

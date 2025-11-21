@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS properties (
     half_baths INTEGER,
     baths DECIMAL(3,1),
     sqft INTEGER,
-    lot_sqft INTEGER,
+    lot_sqft BIGINT,
     year_built INTEGER,
     property_type VARCHAR(50),
 
@@ -99,12 +99,12 @@ CREATE TABLE IF NOT EXISTS properties (
     last_price_reduction_date TIMESTAMP,
 
     -- Motivation score
-    motivation_score DECIMAL(5, 2),
-    motivation_score_dom DECIMAL(5, 2),
-    motivation_score_reductions DECIMAL(5, 2),
-    motivation_score_off_market DECIMAL(5, 2),
-    motivation_score_status DECIMAL(5, 2),
-    motivation_score_market DECIMAL(5, 2),
+    motivation_score DECIMAL(6, 2),
+    motivation_score_dom DECIMAL(6, 2),
+    motivation_score_reductions DECIMAL(6, 2),
+    motivation_score_off_market DECIMAL(6, 2),
+    motivation_score_status DECIMAL(6, 2),
+    motivation_score_market DECIMAL(6, 2),
 
     -- Agent/Broker
     agent_name VARCHAR(255),
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 
     alert_type VARCHAR(50) NOT NULL,
     alert_reason TEXT,
-    motivation_score DECIMAL(5, 2),
+    motivation_score DECIMAL(6, 2),
 
     sent_at TIMESTAMP DEFAULT NOW(),
     read_at TIMESTAMP,

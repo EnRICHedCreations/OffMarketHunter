@@ -108,65 +108,50 @@ export default function PropertiesPage() {
     setSortBy('created_at');
     setSortOrder('DESC');
   };
-const toggleCompareSelection = (propertyId: number) => {    setSelectedForCompare(prev => {      if (prev.includes(propertyId)) {        return prev.filter(id => id !== propertyId);      } else if (prev.length < 3) {        return [...prev, propertyId];      } else {        alert('Maximum 3 properties can be compared');        return prev;      }    });  };  const handleCompare = () => {    if (selectedForCompare.length < 2) {      alert('Please select at least 2 properties to compare');      return;    }    window.location.href = `/compare?ids=${selectedForCompare.join(',%27')}`;  };
+
+  const toggleCompareSelection = (propertyId: number) => {
+    setSelectedForCompare(prev => {
+      if (prev.includes(propertyId)) {
+        return prev.filter(id => id !== propertyId);
+      } else if (prev.length < 3) {
+        return [...prev, propertyId];
+      } else {
+        alert('Maximum 3 properties can be compared');
+        return prev;
+      }
+    });
+  };
+
+  const handleCompare = () => {
+    if (selectedForCompare.length < 2) {
+      alert('Please select at least 2 properties to compare');
+      return;
+    }
+    window.location.href = `/compare?ids=${selectedForCompare.join(',')}`;
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Properties</h1>
-            <p className="text-gray-600 mt-2">
-              {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
-            </p>
-          </div>
+      {/* Header */}
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Properties</h1>
+          <p className="text-gray-600 mt-2">
+            {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
+          </p>
+        </div>
+        <div className="flex gap-2">
           <ExportButton watchlistId={selectedWatchlist || undefined} />
+          {selectedForCompare.length >= 2 && (
+            <button
+              onClick={handleCompare}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            >
+              Compare ({selectedForCompare.length})
+            </button>
+          )}
         </div>
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Properties</h1>
-            <p className="text-gray-600 mt-2">
-              {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
-            </p>
-          </div>
-          <ExportButton watchlistId={selectedWatchlist || undefined} />
-        </div>
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Properties</h1>
-            <p className="text-gray-600 mt-2">
-              {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
-            </p>
-          </div>
-          <ExportButton watchlistId={selectedWatchlist || undefined} />
-        </div>
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Properties</h1>
-            <p className="text-gray-600 mt-2">
-              {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
-            </p>
-          </div>
-          <ExportButton watchlistId={selectedWatchlist || undefined} />
-        </div>
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Properties</h1>
-            <p className="text-gray-600 mt-2">
-              {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
-            </p>
-          </div>
-          <ExportButton watchlistId={selectedWatchlist || undefined} />
-        </div>
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Properties</h1>
-            <p className="text-gray-600 mt-2">
-              {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
-            </p>
-          </div>
-          <ExportButton watchlistId={selectedWatchlist || undefined} />
-        </div>
-        </div>
+      </div>
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -381,9 +366,18 @@ const toggleCompareSelection = (propertyId: number) => {    setSelectedForCompar
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {properties.map((property) => (                  <div key={property.id} className="relative">                    <input                      type="checkbox"                      checked={selectedForCompare.includes(property.id)}                      onChange={() => toggleCompareSelection(property.id)}                      className="absolute top-4 left-4 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded z-10 cursor-pointer"                      title="Select for comparison"                    />                    <PropertyCard property={property} />                  </div>
-                {properties.map((property) => (                  <div key={property.id} className="relative">                    <input                      type="checkbox"                      checked={selectedForCompare.includes(property.id)}                      onChange={() => toggleCompareSelection(property.id)}                      className="absolute top-4 left-4 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded z-10 cursor-pointer"                      title="Select for comparison"                    />                    <PropertyCard property={property} />                  </div>
-                {properties.map((property) => (                  <div key={property.id} className="relative">                    <input                      type="checkbox"                      checked={selectedForCompare.includes(property.id)}                      onChange={() => toggleCompareSelection(property.id)}                      className="absolute top-4 left-4 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded z-10 cursor-pointer"                      title="Select for comparison"                    />                    <PropertyCard property={property} />                  </div>
+                {properties.map((property) => (
+                  <div key={property.id} className="relative">
+                    <input
+                      type="checkbox"
+                      checked={selectedForCompare.includes(property.id)}
+                      onChange={() => toggleCompareSelection(property.id)}
+                      className="absolute top-4 left-4 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded z-10 cursor-pointer"
+                      title="Select for comparison"
+                    />
+                    <PropertyCard property={property} />
+                  </div>
+                ))}
               </div>
             )}
           </>

@@ -216,21 +216,34 @@ export async function POST(request: Request) {
 
           // Track status changes
           if (oldStatus && newStatus && oldStatus !== newStatus) {
-            await sql`
-              INSERT INTO property_history (
-                property_id,
-                event_type,
-                event_date,
-                old_status,
-                new_status
-              ) VALUES (
-                ${propertyDbId},
-                'status_change',
-                NOW(),
-                ${oldStatus},
-                ${newStatus}
-              )
+            // Check if this exact status change has already been recorded
+            const existingStatusChange = await sql`
+              SELECT id FROM property_history
+              WHERE property_id = ${propertyDbId}
+                AND event_type = 'status_change'
+                AND old_status = ${oldStatus}
+                AND new_status = ${newStatus}
+              LIMIT 1
             `;
+
+            // Only create a new history entry if this exact status change hasn't been recorded
+            if (existingStatusChange.rows.length === 0) {
+              await sql`
+                INSERT INTO property_history (
+                  property_id,
+                  event_type,
+                  event_date,
+                  old_status,
+                  new_status
+                ) VALUES (
+                  ${propertyDbId},
+                  'status_change',
+                  NOW(),
+                  ${oldStatus},
+                  ${newStatus}
+                )
+              `;
+            }
           }
 
           // Track price reductions
@@ -241,28 +254,41 @@ export async function POST(request: Request) {
             const reductionAmount = oldPrice - newPrice;
             const reductionPercent = (reductionAmount / oldPrice) * 100;
 
-            priceReductionCount++;
-            totalReductionAmount += reductionAmount;
-
-            await sql`
-              INSERT INTO property_history (
-                property_id,
-                event_type,
-                event_date,
-                old_price,
-                new_price,
-                price_change_amount,
-                price_change_percent
-              ) VALUES (
-                ${propertyDbId},
-                'price_reduction',
-                NOW(),
-                ${oldPrice},
-                ${newPrice},
-                ${reductionAmount},
-                ${reductionPercent}
-              )
+            // Check if this exact price change has already been recorded
+            const existingPriceChange = await sql`
+              SELECT id FROM property_history
+              WHERE property_id = ${propertyDbId}
+                AND event_type = 'price_reduction'
+                AND old_price = ${oldPrice}
+                AND new_price = ${newPrice}
+              LIMIT 1
             `;
+
+            // Only create a new history entry if this exact price change hasn't been recorded
+            if (existingPriceChange.rows.length === 0) {
+              priceReductionCount++;
+              totalReductionAmount += reductionAmount;
+
+              await sql`
+                INSERT INTO property_history (
+                  property_id,
+                  event_type,
+                  event_date,
+                  old_price,
+                  new_price,
+                  price_change_amount,
+                  price_change_percent
+                ) VALUES (
+                  ${propertyDbId},
+                  'price_reduction',
+                  NOW(),
+                  ${oldPrice},
+                  ${newPrice},
+                  ${reductionAmount},
+                  ${reductionPercent}
+                )
+              `;
+            }
           }
 
           // UPDATE existing property

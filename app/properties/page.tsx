@@ -45,7 +45,9 @@ export default function PropertiesPage() {
   // Sort states
   const [sortBy, setSortBy] = useState<string>('created_at');
   const [sortOrder, setSortOrder] = useState<string>('DESC');
-// Comparison states  const [selectedForCompare, setSelectedForCompare] = useState<number[]>([]);
+
+  // Comparison states
+  const [selectedForCompare, setSelectedForCompare] = useState<number[]>([]);
 
   // Fetch watchlists for filter dropdown
   useEffect(() => {
@@ -141,7 +143,7 @@ export default function PropertiesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <ExportButton watchlistId={selectedWatchlist || undefined} />
+          <ExportButton watchlistId={watchlistFilter || undefined} />
           {selectedForCompare.length >= 2 && (
             <button
               onClick={handleCompare}

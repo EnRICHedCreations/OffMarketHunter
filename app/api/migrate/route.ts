@@ -64,6 +64,9 @@ export async function POST() {
     await sql`ALTER TABLE properties ALTER COLUMN lot_sqft TYPE BIGINT`;
     await sql`ALTER TABLE alerts ALTER COLUMN motivation_score TYPE DECIMAL(6, 2)`;
 
+    // Add tags field to watchlists
+    await sql`ALTER TABLE watchlists ADD COLUMN IF NOT EXISTS tags JSONB`;
+
     return NextResponse.json({
       success: true,
       message: 'Migration completed successfully',

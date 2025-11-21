@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS watchlists (
     year_built_min INTEGER,
     year_built_max INTEGER,
     property_types JSONB,
+    tags JSONB,
 
     -- Monitoring settings
     track_off_market BOOLEAN DEFAULT true,

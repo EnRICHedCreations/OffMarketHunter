@@ -44,15 +44,19 @@ export async function GET(request: Request) {
     }
 
     // Get properties with user ownership verification
-    const result = await sql`
+    // Build IN clause manually since vercel/postgres doesn't support array parameters
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
+    const query = `
       SELECT
         p.*,
         w.name as watchlist_name
       FROM properties p
       INNER JOIN watchlists w ON p.watchlist_id = w.id
-      WHERE p.id = ANY(${ids}) AND w.user_id = ${userId}
-      ORDER BY ARRAY_POSITION(${ids}::int[], p.id)
+      WHERE p.id IN (${placeholders}) AND w.user_id = $${ids.length + 1}
+      ORDER BY p.id
     `;
+
+    const result = await sql.query(query, [...ids, userId]);
 
     // Convert DECIMAL fields to numbers
     const properties = result.rows.map((row: any) => ({

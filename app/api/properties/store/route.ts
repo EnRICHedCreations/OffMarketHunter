@@ -12,6 +12,82 @@ function normalizeStatus(status: string): string {
   return status.toLowerCase().replace(/\s+/g, '_');
 }
 
+// Calculate motivation score
+async function calculateMotivationScore(
+  propertyData: any,
+  propertyHistory: any[],
+  marketData: any
+) {
+  const dom = propertyData.days_on_market || 0;
+  let domScore = 0;
+  if (dom < 30) domScore = 5;
+  else if (dom < 60) domScore = 10;
+  else if (dom < 90) domScore = 15;
+  else if (dom < 120) domScore = 20;
+  else domScore = 25;
+
+  const reductionCount = propertyData.price_reduction_count || 0;
+  const reductionPercent = propertyData.total_price_reduction_percent || 0;
+  const countScore = Math.min(reductionCount * 7, 15);
+  const percentScore = Math.min(reductionPercent * 0.75, 15);
+  const reductionScore = countScore + percentScore;
+
+  let offMarketDays = 0;
+  const currentStatus = (propertyData.current_status || '').toLowerCase();
+  let offMarketScore = 0;
+
+  if (['off_market', 'off market', 'withdrawn'].includes(currentStatus)) {
+    const listDate = propertyData.list_date;
+    if (listDate) {
+      try {
+        const listDt = new Date(listDate);
+        offMarketDays = Math.floor((Date.now() - listDt.getTime()) / (1000 * 60 * 60 * 24));
+      } catch {
+        offMarketDays = 30;
+      }
+    }
+  }
+
+  if (offMarketDays < 7) offMarketScore = 20;
+  else if (offMarketDays < 30) offMarketScore = 15;
+  else if (offMarketDays < 90) offMarketScore = 10;
+  else offMarketScore = 5;
+
+  let statusScore = 0;
+  for (const h of propertyHistory) {
+    const oldStatus = (h.old_status || '').toLowerCase();
+    const newStatus = (h.new_status || '').toLowerCase();
+
+    if (['pending', 'contingent'].includes(oldStatus) &&
+        ['off_market', 'off market', 'withdrawn'].includes(newStatus)) {
+      statusScore += 10;
+      break;
+    }
+  }
+
+  if (currentStatus === 'expired') {
+    statusScore += 5;
+  }
+  statusScore = Math.min(statusScore, 15);
+
+  const marketAvgDom = marketData.avg_days_on_market || 60;
+  let marketScore = 3;
+  if (dom > marketAvgDom * 1.5) marketScore = 10;
+  else if (dom > marketAvgDom * 1.2) marketScore = 7;
+  else if (dom > marketAvgDom) marketScore = 5;
+
+  const totalScore = domScore + reductionScore + offMarketScore + statusScore + marketScore;
+
+  return {
+    total: Math.round(totalScore * 100) / 100,
+    dom_component: Math.round(domScore * 100) / 100,
+    reduction_component: Math.round(reductionScore * 100) / 100,
+    off_market_component: Math.round(offMarketScore * 100) / 100,
+    status_component: Math.round(statusScore * 100) / 100,
+    market_component: Math.round(marketScore * 100) / 100,
+  };
+}
+
 interface PropertyInput {
   property_id: string;
   full_street_line: string;
@@ -348,6 +424,65 @@ export async function POST(request: Request) {
       SET last_scraped_at = NOW()
       WHERE id = ${watchlist_id}
     `;
+
+    // Calculate motivation scores for all properties in this watchlist
+    console.log('[SCORING] Calculating motivation scores for watchlist', watchlist_id);
+    try {
+      const propertiesResult = await sql`
+        SELECT * FROM properties
+        WHERE watchlist_id = ${watchlist_id}
+      `;
+
+      let scoredCount = 0;
+      for (const property of propertiesResult.rows) {
+        try {
+          // Fetch property history
+          const historyResult = await sql`
+            SELECT * FROM property_history
+            WHERE property_id = ${property.id}
+            ORDER BY event_date DESC
+          `;
+
+          // Prepare data for scoring
+          const propertyData = {
+            days_on_market: property.raw_data?.days_on_market || property.total_days_on_market || 0,
+            price_reduction_count: property.price_reduction_count || 0,
+            total_price_reduction_percent: property.total_price_reduction_percent || 0,
+            current_status: property.current_status,
+            list_date: property.original_list_date,
+          };
+
+          // Calculate score
+          const score = await calculateMotivationScore(
+            propertyData,
+            historyResult.rows,
+            { avg_days_on_market: 60 }
+          );
+
+          // Update property with scores
+          await sql`
+            UPDATE properties
+            SET
+              motivation_score = ${score.total},
+              motivation_score_dom = ${score.dom_component},
+              motivation_score_reductions = ${score.reduction_component},
+              motivation_score_off_market = ${score.off_market_component},
+              motivation_score_status = ${score.status_component},
+              motivation_score_market = ${score.market_component},
+              updated_at = NOW()
+            WHERE id = ${property.id}
+          `;
+
+          scoredCount++;
+        } catch (err) {
+          console.error(`Error scoring property ${property.id}:`, err);
+        }
+      }
+
+      console.log(`[SCORING] Scored ${scoredCount} properties for watchlist ${watchlist_id}`);
+    } catch (err) {
+      console.error('[SCORING] Error calculating scores:', err);
+    }
 
     // Generate alerts for high-motivation properties
     try {

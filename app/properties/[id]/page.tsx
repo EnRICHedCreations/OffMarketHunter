@@ -135,10 +135,11 @@ export default async function PropertyDetailPage({
         `${property.full_street_line}, ${property.city}, ${property.state} ${property.zip_code}`
       )}`;
 
-  // Create Realtor.com link
-  const realtorLink = `https://www.realtor.com/realestateandhomes-search/${encodeURIComponent(
-    `${property.full_street_line}, ${property.city}, ${property.state} ${property.zip_code}`
-  )}`;
+  // Create Realtor.com link - use scraped URL if available, otherwise construct search URL
+  const realtorLink = property.raw_data?.property_url ||
+    `https://www.realtor.com/realestateandhomes-search/${encodeURIComponent(
+      `${property.full_street_line}, ${property.city}, ${property.state} ${property.zip_code}`
+    )}`;
 
   return (
     <div className="max-w-6xl mx-auto">
